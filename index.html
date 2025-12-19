@@ -419,7 +419,7 @@ const proofChallenges = [
         diagram:{points:[{id:"A",x:80,y:60,label:"A"},{id:"B",x:50,y:200,label:"B"},{id:"C",x:200,y:200,label:"C"},{id:"D",x:280,y:200,label:"D"}],lines:[{id:"AB",from:"A",to:"B"},{id:"AC",from:"A",to:"C"},{id:"BC",from:"B",to:"C"},{id:"CD",from:"C",to:"D"}],shapes:[{points:["A","B","C"],fill:"rgba(0,245,255,.12)"}],givenMarks:{ticks:[],angles:[{vertex:"A",rays:["B","C"],type:1},{vertex:"B",rays:["A","C"],type:2}],rightAngles:[],parallel:[]}},
         given:["△ABC with exterior ∠ACD"],prove:"m∠ACD = m∠A + m∠B",
         proof:[{statement:"m∠A + m∠B + m∠ACB = 180°",reason:"Triangle Angle Sum",prefilled:{easy:true,medium:true,hard:false}},{statement:"∠ACB and ∠ACD are supplementary",reason:"Linear Pair Postulate",prefilled:{easy:true,medium:false,hard:false}},{statement:"m∠ACB + m∠ACD = 180°",reason:"Def. of Supplementary",prefilled:{easy:true,medium:false,hard:false}},{statement:"m∠A + m∠B + m∠ACB = m∠ACB + m∠ACD",reason:"Substitution",prefilled:{easy:false,medium:false,hard:false}},{statement:"m∠A + m∠B = m∠ACD",reason:"Subtraction Property",prefilled:{easy:false,medium:false,hard:false}}],
-        bankItems:{statements:["m∠A + m∠B = m∠ACD","m∠A + m∠B + m∠ACB = m∠ACB + m∠ACD","m∠ACB + m∠ACD = 180°","∠ACB and ∠ACD are supplementary","m∠A + m∠B + m∠ACB = 180°"],reasons:["Triangle Angle Sum","Linear Pair Postulate","Def. of Supplementary","Substitution","Subtraction Property"]}},
+        bankItems:{statements:["m∠A + m∠B = m∠ACD","m∠A + m∠B + m∠ACB = m∠ACB + m∠ACD","m∠ACB + m∠ACD = 180°","∠ACB and ∠ACD are supplementary","m∠A + m∠B + m∠ACB = 180°"],reasons:["Given","Triangle Angle Sum","Linear Pair Postulate","Def. of Supplementary","Substitution","Subtraction Property"]}},
 
     {id:17,category:'triangle-props',topic:"Triangle Properties",title:"Triangle Angle Sum",mixedTitle:"Triangle Props #3",mixedTopic:"Properties",description:"Interior angles = 180°",mixedDescription:"Triangle property proof",difficulty:"hard",xp:100,
         diagram:{points:[{id:"A",x:160,y:40,label:"A"},{id:"B",x:60,y:200,label:"B"},{id:"C",x:260,y:200,label:"C"},{id:"D",x:30,y:40,label:"D"},{id:"E",x:290,y:40,label:"E"}],lines:[{id:"AB",from:"A",to:"B"},{id:"AC",from:"A",to:"C"},{id:"BC",from:"B",to:"C"},{id:"DE",from:"D",to:"E"}],shapes:[{points:["A","B","C"],fill:"rgba(0,245,255,.12)"}],givenMarks:{ticks:[],angles:[{vertex:"A",rays:["B","C"],type:1},{vertex:"B",rays:["A","C"],type:2},{vertex:"C",rays:["A","B"],type:3}],rightAngles:[],parallel:[{line1:"DE",line2:"BC"}]}},
@@ -541,18 +541,31 @@ function renderGivenInfo(){const proof=gameState.currentProof;document.getElemen
 
 function renderProofTable(){const proof=gameState.currentProof,diff=gameState.currentDifficulty,tbody=document.getElementById('proof-body');tbody.innerHTML='';
 const isHard=diff==='hard';
+// Ensure all statements and reasons from the proof are available
+const allStatements=[...new Set([...proof.bankItems.statements,...proof.proof.map(s=>s.statement)])];
+const allReasons=[...new Set(["Given",...proof.bankItems.reasons,...proof.proof.map(s=>s.reason)])];
 proof.proof.forEach((step,i)=>{const tr=document.createElement('tr');tr.className='proof-row';const isPre=step.prefilled[diff];
 if(isHard&&!isPre){
-const stmtOpts=proof.bankItems.statements.map(s=>`<option value="${s}">${s}</option>`).join('');
-const reasonOpts=proof.bankItems.reasons.map(r=>`<option value="${r}">${r}</option>`).join('');
-tr.innerHTML=`<td>${i+1}</td><td><select class="proof-select" data-type="statement" data-row="${i}"><option value="">Select statement...</option>${stmtOpts}</select></td><td><select class="proof-select" data-type="reason" data-row="${i}"><option value="">Select reason...</option>${reasonOpts}</select></td>`;
+const stmtOpts=allStatements.map(s=>`<option value="${s}">${s}</option>`).join('');
+const reasonOptHtml=allReasons.map(r=>`<option value="${r}">${r}</option>`).join('');
+tr.innerHTML=`<td>${i+1}</td><td><select class="proof-select" data-type="statement" data-row="${i}"><option value="">Select statement...</option>${stmtOpts}</select></td><td><select class="proof-select" data-type="reason" data-row="${i}"><option value="">Select reason...</option>${reasonOptHtml}</select></td>`;
 }else{
 tr.innerHTML=`<td>${i+1}</td><td>${isPre?`<div class="proof-cell filled given">${step.statement}</div>`:`<div class="dropzone" data-type="statement" data-row="${i}" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">statement</div>`}</td><td>${isPre?`<div class="proof-cell filled given">${step.reason}</div>`:`<div class="dropzone" data-type="reason" data-row="${i}" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">reason</div>`}</td>`;}
 tbody.appendChild(tr);});renderAnswerBank();}
 
 function renderAnswerBank(){const proof=gameState.currentProof,diff=gameState.currentDifficulty,bank=document.getElementById('answer-bank'),bankItems=document.getElementById('bank-items');
 if(diff==='hard'){bank.style.display='none';return;}
-bank.style.display='block';bankItems.innerHTML='';const usedS=new Set(),usedR=new Set();proof.proof.forEach(s=>{if(s.prefilled[diff]){usedS.add(s.statement);usedR.add(s.reason);}});const items=[...proof.bankItems.statements.filter(s=>!usedS.has(s)).map(s=>({text:s,type:'statement'})),...proof.bankItems.reasons.filter(r=>!usedR.has(r)).map(r=>({text:r,type:'reason'}))];for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}
+bank.style.display='block';bankItems.innerHTML='';
+// Collect all statements and reasons needed for unfilled rows
+const neededStatements=[],neededReasons=[];
+proof.proof.forEach(s=>{if(!s.prefilled[diff]){neededStatements.push(s.statement);neededReasons.push(s.reason);}});
+// Combine needed items with bank items (for distractors), remove duplicates
+const allStatements=[...new Set([...neededStatements,...proof.bankItems.statements])];
+const allReasons=[...new Set([...neededReasons,...proof.bankItems.reasons])];
+// Build items list
+const items=[...allStatements.map(s=>({text:s,type:'statement'})),...allReasons.map(r=>({text:r,type:'reason'}))];
+// Shuffle
+for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}
 items.forEach(item=>{const div=document.createElement('div');div.className='bank-item';div.draggable=true;div.dataset.text=item.text;div.dataset.type=item.type;div.textContent=item.text;div.ondragstart=handleDragStart;div.ondragend=handleDragEnd;bankItems.appendChild(div);});}
 
 let draggedItem=null;
