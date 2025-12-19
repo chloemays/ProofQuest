@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProofQuest - Master Geometry Proofs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root{--neon-cyan:#00f5ff;--neon-pink:#ff00ff;--neon-green:#39ff14;--neon-orange:#ff6b35;--neon-purple:#bf00ff;--neon-yellow:#ffff00;--dark-bg:#0a0a0f;--card-bg:#12121a;--card-border:#1e1e2e;--text-primary:#fff;--text-secondary:#8888aa;--success:#39ff14;--warning:#ffcc00;--danger:#ff3366}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Rajdhani',sans-serif;background:var(--dark-bg);color:var(--text-primary);min-height:100vh;overflow-x:hidden}
+        .bg-grid{position:fixed;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(0,245,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,.03) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0}
+        .navbar-custom{background:rgba(18,18,26,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--card-border);padding:.75rem 1.5rem;position:relative;z-index:100}
+        .brand{font-family:'Orbitron',monospace;font-weight:900;font-size:1.5rem;background:linear-gradient(135deg,var(--neon-cyan),var(--neon-pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none;display:flex;align-items:center;gap:.5rem}
+        .brand i{-webkit-text-fill-color:var(--neon-cyan)}
+        .stats-bar{display:flex;gap:1rem;align-items:center}
+        .stat-item{display:flex;align-items:center;gap:.4rem;padding:.4rem .75rem;background:rgba(0,245,255,.1);border:1px solid rgba(0,245,255,.2);border-radius:50px;font-family:'Space Mono',monospace;font-size:.8rem}
+        .stat-item.xp{background:rgba(57,255,20,.1);border-color:rgba(57,255,20,.3)}.stat-item.xp i{color:var(--neon-green)}
+        .stat-item.streak{background:rgba(255,107,53,.1);border-color:rgba(255,107,53,.3)}.stat-item.streak i{color:var(--neon-orange)}
+        .stat-item.level{background:rgba(191,0,255,.1);border-color:rgba(191,0,255,.3)}.stat-item.level i{color:var(--neon-purple)}
+        .main-content{position:relative;z-index:1;padding:1.5rem;max-width:1400px;margin:0 auto}
+        .dashboard{display:grid;grid-template-columns:1fr 280px;gap:1.5rem}
+        @media(max-width:1000px){.dashboard{grid-template-columns:1fr}}
+        .section-title{font-family:'Orbitron',monospace;font-size:1.2rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+        .section-title i{color:var(--neon-cyan)}
+        .category-tabs{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+        .category-tab{padding:.5rem 1rem;border-radius:6px;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;transition:all .3s ease;border:1px solid var(--card-border);background:transparent;color:var(--text-secondary)}
+        .category-tab:hover{border-color:var(--neon-cyan);color:var(--neon-cyan)}
+        .category-tab.active{background:var(--neon-cyan);border-color:var(--neon-cyan);color:var(--dark-bg)}
+        .proof-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+        .proof-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1rem;cursor:pointer;transition:all .3s ease;position:relative;overflow:hidden}
+        .proof-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,var(--neon-cyan),var(--neon-pink));transform:scaleX(0);transition:transform .3s ease}
+        .proof-card:hover{transform:translateY(-3px);border-color:var(--neon-cyan);box-shadow:0 8px 30px rgba(0,245,255,.2)}
+        .proof-card:hover::before{transform:scaleX(1)}
+        .proof-card.mixed{border-color:var(--neon-purple)}
+        .proof-card.mixed::before{background:linear-gradient(90deg,var(--neon-purple),var(--neon-pink))}
+        .proof-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+        .proof-topic{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--neon-cyan);font-weight:600}
+        .proof-topic.mystery{color:var(--neon-purple)}
+        .proof-title{font-family:'Orbitron',monospace;font-size:1rem}
+        .mystery-badge{background:linear-gradient(135deg,var(--neon-purple),var(--neon-pink));color:#fff;padding:.2rem .5rem;border-radius:12px;font-size:.65rem;font-weight:700}
+        .proof-meta{display:flex;justify-content:space-between;align-items:center;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--card-border);font-size:.8rem}
+        .xp-reward{display:flex;align-items:center;gap:.3rem;color:var(--neon-green);font-family:'Space Mono',monospace}
+        .completion-status{display:flex;align-items:center;gap:.3rem;color:var(--text-secondary)}
+        .completion-status.completed{color:var(--neon-green)}
+        .sidebar{display:flex;flex-direction:column;gap:1rem}
+        .sidebar-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1rem}
+        .progress-ring-container{display:flex;align-items:center;gap:1rem}
+        .progress-ring{position:relative;width:80px;height:80px;flex-shrink:0}
+        .progress-ring svg{transform:rotate(-90deg)}
+        .progress-ring circle{fill:none;stroke-width:6}
+        .progress-ring .bg{stroke:var(--card-border)}
+        .progress-ring .progress{stroke:url(#progressGradient);stroke-linecap:round;transition:stroke-dashoffset .5s ease}
+        .progress-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+        .progress-level{font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:900;background:linear-gradient(135deg,var(--neon-cyan),var(--neon-pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .progress-info{font-size:.85rem}
+        .progress-info .xp-text{color:var(--neon-cyan);font-family:'Space Mono',monospace}
+        .quick-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;margin-top:.75rem}
+        .quick-stat{background:rgba(0,0,0,.3);border-radius:8px;padding:.5rem;text-align:center}
+        .quick-stat-value{font-family:'Orbitron',monospace;font-size:1.1rem;color:var(--neon-cyan)}
+        .quick-stat-label{font-size:.65rem;color:var(--text-secondary);text-transform:uppercase}
+        .achievements-row{display:flex;gap:.5rem;flex-wrap:wrap}
+        .achievement{width:36px;height:36px;background:rgba(0,0,0,.3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;border:1px solid transparent;transition:all .3s ease}
+        .achievement.unlocked{background:rgba(57,255,20,.1);border-color:var(--neon-green)}
+        .achievement.locked{opacity:.3;filter:grayscale(1)}
+        .game-view{display:none}.game-view.active{display:block}
+        .dashboard.hidden{display:none}
+        .game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--card-border)}
+        .back-btn{background:transparent;border:1px solid var(--card-border);color:var(--text-primary);padding:.5rem 1rem;border-radius:6px;font-size:.9rem;cursor:pointer;display:flex;align-items:center;gap:.4rem;transition:all .3s ease}
+        .back-btn:hover{border-color:var(--neon-cyan);color:var(--neon-cyan)}
+        .game-info{text-align:center}
+        .game-title{font-family:'Orbitron',monospace;font-size:1.2rem}
+        .game-subtitle{color:var(--text-secondary);font-size:.8rem}
+        .timer-display{font-family:'Space Mono',monospace;font-size:1.2rem;color:var(--neon-cyan);display:flex;align-items:center;gap:.4rem}
+        .timer-display.warning{color:var(--warning);animation:pulse 1s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+        .difficulty-selector{display:flex;gap:.5rem;justify-content:center;margin-bottom:1rem}
+        .diff-btn{padding:.5rem 1.5rem;border-radius:6px;font-weight:600;font-size:.9rem;cursor:pointer;transition:all .3s ease;border:2px solid}
+        .diff-btn.easy{background:transparent;border-color:var(--neon-green);color:var(--neon-green)}
+        .diff-btn.easy:hover,.diff-btn.easy.active{background:var(--neon-green);color:var(--dark-bg)}
+        .diff-btn.medium{background:transparent;border-color:var(--warning);color:var(--warning)}
+        .diff-btn.medium:hover,.diff-btn.medium.active{background:var(--warning);color:var(--dark-bg)}
+        .diff-btn.hard{background:transparent;border-color:var(--danger);color:var(--danger)}
+        .diff-btn.hard:hover,.diff-btn.hard.active{background:var(--danger);color:var(--dark-bg)}
+        .game-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+        @media(max-width:1000px){.game-layout{grid-template-columns:1fr}}
+        .diagram-section{background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1.25rem}
+        .diagram-row{display:flex;gap:1rem;align-items:flex-start}
+        .given-panel{flex:0 0 150px;font-size:.85rem}
+        .given-title{font-weight:700;color:var(--neon-cyan);margin-bottom:.4rem;font-size:.75rem;text-transform:uppercase;letter-spacing:1px}
+        .given-list{font-family:'Space Mono',monospace;font-size:.8rem;line-height:1.6;margin-bottom:1rem}
+        .prove-title{font-weight:700;color:var(--neon-pink);font-size:.75rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:.3rem}
+        .prove-statement{font-family:'Space Mono',monospace;font-size:.85rem}
+        .diagram-center{flex:1;display:flex;flex-direction:column;align-items:center}
+        .diagram-area{display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);border-radius:8px;width:100%;min-height:280px}
+        .diagram-svg{width:320px;height:270px}
+        .tools-panel{flex:0 0 90px;display:flex;flex-direction:column;gap:.4rem}
+        .tool-btn{background:rgba(0,0,0,.3);border:1px solid var(--card-border);border-radius:6px;padding:.4rem .5rem;color:var(--text-secondary);cursor:pointer;transition:all .3s ease;font-size:.7rem;font-family:'Rajdhani',sans-serif;text-align:center}
+        .tool-btn:hover{border-color:var(--neon-cyan);color:var(--neon-cyan)}
+        .tool-btn.active{background:var(--neon-cyan);border-color:var(--neon-cyan);color:var(--dark-bg)}
+        .tool-btn.danger{color:var(--danger);border-color:rgba(255,51,102,.3)}
+        .tool-btn.danger:hover{background:var(--danger);border-color:var(--danger);color:#fff}
+        .tool-section-label{font-size:.6rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-top:.5rem;margin-bottom:.2rem;text-align:center}
+        .diagram-point{cursor:pointer;transition:all .2s ease}
+        .diagram-point:hover circle{r:9}
+        .diagram-point circle{fill:var(--neon-cyan);stroke:#fff;stroke-width:2;transition:all .2s ease}
+        .diagram-line{stroke:var(--neon-cyan);stroke-width:2.5;fill:none;cursor:pointer}
+        .diagram-line:hover{stroke-width:4}
+        .diagram-line.dashed{stroke-dasharray:8,4}
+        .point-label{font-family:'Space Mono',monospace;font-size:14px;fill:#fff;font-weight:700;pointer-events:none}
+        .tick-mark{stroke:var(--neon-yellow);stroke-width:2.5;stroke-linecap:round}
+        .angle-arc{fill:none;stroke-width:2.5}
+        .angle-arc.congruent-1{stroke:var(--neon-orange)}
+        .angle-arc.congruent-2{stroke:var(--neon-pink)}
+        .angle-arc.right-angle{stroke:var(--neon-cyan)}
+        .parallel-mark{stroke:var(--neon-purple);stroke-width:2;fill:none}
+        .user-annotation{cursor:pointer}.user-annotation:hover{filter:brightness(1.3)}
+        .annotation-label{font-family:'Space Mono',monospace;font-size:12px;fill:var(--neon-yellow)}
+        .proof-container{background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:1rem}
+        .proof-table-title{font-family:'Orbitron',monospace;font-size:.9rem;margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem}
+        .proof-table-title i{color:var(--neon-green)}
+        .proof-table{width:100%;border-collapse:separate;border-spacing:0 .4rem;font-size:.85rem}
+        .proof-table th{text-align:left;padding:.5rem;font-family:'Orbitron',monospace;font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary)}
+        .proof-table th:first-child{width:30px}
+        .proof-row{background:rgba(0,0,0,.3);transition:all .3s ease}
+        .proof-row:hover{background:rgba(0,245,255,.1)}
+        .proof-row td{padding:.5rem}
+        .proof-row td:first-child{border-radius:6px 0 0 6px;font-family:'Space Mono',monospace;color:var(--neon-cyan);font-weight:700;text-align:center}
+        .proof-row td:last-child{border-radius:0 6px 6px 0}
+        .proof-cell{min-height:32px;display:flex;align-items:center}
+        .proof-cell.filled{font-family:'Space Mono',monospace;font-size:.8rem}
+        .proof-cell.given{color:var(--neon-cyan)}
+        .proof-cell.correct{color:var(--neon-green);font-size:.75rem;margin-top:.25rem}
+        .dropzone{min-height:32px;border:2px dashed var(--card-border);border-radius:6px;padding:.4rem .6rem;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:.8rem;transition:all .3s ease;cursor:pointer}
+        .dropzone:hover{border-color:var(--neon-cyan);background:rgba(0,245,255,.1)}
+        .dropzone.drag-over{border-color:var(--neon-green);background:rgba(57,255,20,.1)}
+        .dropzone.filled{border-style:solid;border-color:var(--neon-cyan);color:var(--text-primary);font-family:'Space Mono',monospace;justify-content:space-between;font-size:.8rem}
+        .dropzone.correct{border-color:var(--neon-green);background:rgba(57,255,20,.1)}
+        .dropzone.incorrect{border-color:var(--danger);background:rgba(255,51,102,.1)}
+        .dropzone.shake{animation:shake .5s ease}
+        @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+        .proof-select{width:100%;padding:.5rem .75rem;background:rgba(0,0,0,.4);border:2px solid var(--card-border);border-radius:6px;color:var(--text-primary);font-family:'Space Mono',monospace;font-size:.8rem;cursor:pointer;transition:all .3s ease;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2300f5ff' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .75rem center}
+        .proof-select:hover{border-color:var(--neon-cyan)}
+        .proof-select:focus{outline:none;border-color:var(--neon-cyan);box-shadow:0 0 10px rgba(0,245,255,.3)}
+        .proof-select option{background:var(--card-bg);color:var(--text-primary);padding:.5rem}
+        .proof-select.correct{border-color:var(--neon-green);background-color:rgba(57,255,20,.1)}
+        .proof-select.incorrect{border-color:var(--danger);background-color:rgba(255,51,102,.1)}
+        .remove-btn{background:transparent;border:none;color:var(--danger);cursor:pointer;padding:.2rem;font-size:.9rem}
+        .answer-bank{margin-top:1rem;padding:.75rem;background:rgba(0,0,0,.3);border-radius:8px}
+        .bank-title{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-secondary);margin-bottom:.5rem}
+        .bank-items{display:flex;flex-wrap:wrap;gap:.4rem}
+        .bank-item{background:rgba(191,0,255,.2);border:1px solid var(--neon-purple);border-radius:6px;padding:.35rem .7rem;font-family:'Space Mono',monospace;font-size:.75rem;cursor:grab;transition:all .3s ease;user-select:none}
+        .bank-item:hover{background:var(--neon-purple);color:#fff;transform:translateY(-2px)}
+        .bank-item.dragging{opacity:.5;cursor:grabbing}
+        .bank-item.used{opacity:.3;pointer-events:none}
+        .action-buttons{display:flex;gap:.75rem;margin-top:1rem;justify-content:center}
+        .action-btn{padding:.6rem 1.25rem;border-radius:6px;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .3s ease;display:flex;align-items:center;gap:.4rem}
+        .btn-submit{background:linear-gradient(135deg,var(--neon-green),var(--neon-cyan));border:none;color:var(--dark-bg);padding:.75rem 2rem}
+        .btn-submit:hover{transform:scale(1.05);box-shadow:0 5px 20px rgba(57,255,20,.4)}
+        .btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .btn-hint{background:transparent;border:2px solid var(--warning);color:var(--warning)}
+        .btn-hint:hover{background:var(--warning);color:var(--dark-bg)}
+        .btn-reset{background:transparent;border:2px solid var(--danger);color:var(--danger)}
+        .btn-reset:hover{background:var(--danger);color:#fff}
+        .hints-remaining{text-align:center;margin-top:.5rem;color:var(--text-secondary);font-size:.8rem}
+        .hints-remaining span{color:var(--warning);font-family:'Space Mono',monospace}
+        .success-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.9);z-index:1000;justify-content:center;align-items:center}
+        .success-modal.active{display:flex}
+        .success-content{text-align:center;animation:successPop .5s ease}
+        @keyframes successPop{0%{opacity:0;transform:scale(.5)}50%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+        .success-icon{font-size:4rem;color:var(--neon-green);margin-bottom:.75rem}
+        .success-icon.fail{color:var(--danger)}
+        .success-title{font-family:'Orbitron',monospace;font-size:2rem;margin-bottom:.75rem}
+        .success-xp{font-family:'Space Mono',monospace;font-size:1.25rem;color:var(--neon-green);margin-bottom:1.5rem}
+        .success-stats{display:flex;gap:1.5rem;justify-content:center;margin-bottom:1.5rem}
+        .success-stat{text-align:center}
+        .success-stat-value{font-family:'Orbitron',monospace;font-size:1.25rem;color:var(--neon-cyan)}
+        .success-stat-label{font-size:.7rem;color:var(--text-secondary);text-transform:uppercase}
+        .continue-btn{background:linear-gradient(135deg,var(--neon-cyan),var(--neon-pink));border:none;color:var(--dark-bg);padding:.75rem 2rem;border-radius:6px;font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .3s ease}
+        .continue-btn:hover{transform:scale(1.05);box-shadow:0 5px 20px rgba(0,245,255,.5)}
+        .label-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:1000;justify-content:center;align-items:center}
+        .label-modal.active{display:flex}
+        .label-modal-content{background:var(--card-bg);border:1px solid var(--neon-cyan);border-radius:12px;padding:1.5rem;text-align:center;min-width:280px}
+        .label-input{background:rgba(0,0,0,.4);border:2px solid var(--card-border);border-radius:6px;padding:.6rem;font-family:'Space Mono',monospace;font-size:1rem;color:#fff;text-align:center;width:100%;max-width:150px;margin:.75rem 0}
+        .label-input:focus{outline:none;border-color:var(--neon-cyan)}
+        .confetti{position:fixed;width:10px;height:10px;pointer-events:none;z-index:1001}
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <nav class="navbar-custom">
+        <div class="d-flex justify-content-between align-items-center w-100">
+            <a href="#" class="brand"><i class="bi bi-pentagon"></i> ProofQuest</a>
+            <div class="stats-bar">
+                <div class="stat-item xp"><i class="bi bi-lightning-charge-fill"></i> <span id="total-xp">0</span> XP</div>
+                <div class="stat-item streak"><i class="bi bi-fire"></i> <span id="streak">0</span></div>
+                <div class="stat-item level"><i class="bi bi-award-fill"></i> Lv <span id="current-level">1</span></div>
+            </div>
+        </div>
+    </nav>
+    <div class="main-content">
+        <div class="dashboard" id="dashboard">
+            <div class="main-area">
+                <h2 class="section-title"><i class="bi bi-collection"></i> Choose Your Challenge</h2>
+                <div class="category-tabs" id="category-tabs"></div>
+                <div class="proof-grid" id="proof-grid"></div>
+            </div>
+            <div class="sidebar">
+                <div class="sidebar-card">
+                    <h3 class="section-title" style="margin-bottom:.75rem"><i class="bi bi-graph-up-arrow"></i> Progress</h3>
+                    <div class="progress-ring-container">
+                        <div class="progress-ring">
+                            <svg width="80" height="80">
+                                <defs><linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:var(--neon-cyan)"/><stop offset="100%" style="stop-color:var(--neon-pink)"/></linearGradient></defs>
+                                <circle class="bg" cx="40" cy="40" r="34"/>
+                                <circle class="progress" cx="40" cy="40" r="34" stroke-dasharray="214" stroke-dashoffset="214" id="progress-circle"/>
+                            </svg>
+                            <div class="progress-center"><div class="progress-level" id="level-display">1</div></div>
+                        </div>
+                        <div class="progress-info"><div><span class="xp-text" id="xp-to-next">0</span> / <span id="xp-needed">100</span> XP</div><div class="text-secondary">to Level <span id="next-level">2</span></div></div>
+                    </div>
+                    <div class="quick-stats">
+                        <div class="quick-stat"><div class="quick-stat-value" id="proofs-completed">0</div><div class="quick-stat-label">Done</div></div>
+                        <div class="quick-stat"><div class="quick-stat-value" id="accuracy-rate">0%</div><div class="quick-stat-label">Accuracy</div></div>
+                    </div>
+                </div>
+                <div class="sidebar-card">
+                    <h3 class="section-title" style="margin-bottom:.5rem"><i class="bi bi-trophy-fill"></i> Achievements</h3>
+                    <div class="achievements-row" id="achievements-grid"></div>
+                </div>
+            </div>
+        </div>
+        <div class="game-view" id="game-view">
+            <div class="game-header">
+                <button class="back-btn" onclick="exitGame()"><i class="bi bi-arrow-left"></i> Back</button>
+                <div class="game-info"><div class="game-title" id="game-title">Proof</div><div class="game-subtitle" id="game-subtitle">Desc</div></div>
+                <div class="timer-display" id="timer"><i class="bi bi-clock"></i> <span id="time-value">5:00</span></div>
+            </div>
+            <div class="difficulty-selector">
+                <button class="diff-btn easy active" onclick="setDifficulty('easy')">Easy</button>
+                <button class="diff-btn medium" onclick="setDifficulty('medium')">Medium</button>
+                <button class="diff-btn hard" onclick="setDifficulty('hard')">Hard</button>
+            </div>
+            <div class="game-layout">
+                <div class="diagram-section">
+                    <div class="diagram-row">
+                        <div class="given-panel">
+                            <div class="given-title">Given</div>
+                            <div class="given-list" id="given-list"></div>
+                            <div class="prove-title">Prove</div>
+                            <div class="prove-statement" id="prove-statement"></div>
+                        </div>
+                        <div class="diagram-center">
+                            <div class="diagram-area">
+                                <svg class="diagram-svg" id="diagram-svg" viewBox="0 0 320 270"></svg>
+                            </div>
+                        </div>
+                        <div class="tools-panel">
+                            <button class="tool-btn active" id="tool-select" onclick="setTool('select')">Select</button>
+                            <button class="tool-btn" id="tool-label" onclick="setTool('label')">Label</button>
+                            <div class="tool-section-label">Sides</div>
+                            <button class="tool-btn" id="tool-tick1" onclick="setTool('tick1')">| Tick</button>
+                            <button class="tool-btn" id="tool-tick2" onclick="setTool('tick2')">|| Tick</button>
+                            <div class="tool-section-label">Angles</div>
+                            <button class="tool-btn" id="tool-angle1" onclick="setTool('angle1')">Arc</button>
+                            <button class="tool-btn" id="tool-angle2" onclick="setTool('angle2')">Arc 2</button>
+                            <button class="tool-btn" id="tool-right" onclick="setTool('right')">90°</button>
+                            <div class="tool-section-label"></div>
+                            <button class="tool-btn danger" onclick="clearUserAnnotations()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="proof-container">
+                    <div class="proof-table-title"><i class="bi bi-table"></i> Complete the Proof</div>
+                    <table class="proof-table"><thead><tr><th>#</th><th>Statement</th><th>Reason</th></tr></thead><tbody id="proof-body"></tbody></table>
+                    <div class="answer-bank" id="answer-bank"><div class="bank-title">Drag to fill</div><div class="bank-items" id="bank-items"></div></div>
+                    <div class="action-buttons">
+                        <button class="action-btn btn-hint" onclick="useHint()"><i class="bi bi-lightbulb"></i> Hint</button>
+                        <button class="action-btn btn-submit" id="submit-btn" onclick="submitProof()"><i class="bi bi-send-fill"></i> Submit</button>
+                        <button class="action-btn btn-reset" onclick="resetProof()"><i class="bi bi-arrow-counterclockwise"></i> Clear</button>
+                    </div>
+                    <div class="hints-remaining">Hints: <span id="hints-left">3</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="label-modal" id="label-modal">
+        <div class="label-modal-content">
+            <h4>Add Label</h4>
+            <input type="text" class="label-input" id="label-input" maxlength="10" placeholder="∠1">
+            <div><button class="action-btn btn-submit" onclick="submitLabel()" style="padding:.5rem 1.5rem">Add</button></div>
+        </div>
+    </div>
+    <div class="success-modal" id="success-modal">
+        <div class="success-content">
+            <div class="success-icon" id="result-icon"><i class="bi bi-patch-check-fill"></i></div>
+            <h2 class="success-title" id="result-title">COMPLETE!</h2>
+            <div class="success-xp" id="result-xp">+<span id="earned-xp">100</span> XP</div>
+            <div class="success-stats">
+                <div class="success-stat"><div class="success-stat-value" id="completion-time">2:34</div><div class="success-stat-label">Time</div></div>
+                <div class="success-stat"><div class="success-stat-value" id="correct-count">5/5</div><div class="success-stat-label">Correct</div></div>
+            </div>
+            <button class="continue-btn" onclick="continueGame()">Continue <i class="bi bi-arrow-right"></i></button>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+const categories = [
+    { id: 'triangle-mixed', name: 'Triangle Mix', icon: 'bi-shuffle', mixed: true },
+    { id: 'triangle-practice', name: 'Triangle Congruence', icon: 'bi-triangle' },
+    { id: 'parallel', name: 'Parallel Lines', icon: 'bi-arrows-expand' },
+    { id: 'triangle-props', name: 'Triangle Properties', icon: 'bi-rulers' },
+    { id: 'quadrilaterals', name: 'Quadrilaterals', icon: 'bi-square' },
+    { id: 'cpctc', name: 'CPCTC', icon: 'bi-check2-square' },
+    { id: 'all', name: 'All', icon: 'bi-grid' }
+];
+
+const proofChallenges = [
+    // TRIANGLE CONGRUENCE - SAS
+    {id:1,category:'triangle-practice',topic:"Triangle Congruence",title:"SAS Congruence I",mixedTitle:"Triangle Proof #1",mixedTopic:"Mystery",description:"Side-Angle-Side",mixedDescription:"Which theorem applies?",difficulty:"easy",xp:50,
+        diagram:{points:[{id:"A",x:60,y:50,label:"A"},{id:"B",x:160,y:230,label:"B"},{id:"C",x:260,y:50,label:"C"},{id:"D",x:160,y:50,label:"D"}],lines:[{id:"AB",from:"A",to:"B"},{id:"BC",from:"B",to:"C"},{id:"AD",from:"A",to:"D"},{id:"DC",from:"D",to:"C"},{id:"BD",from:"B",to:"D"}],shapes:[{points:["A","B","D"],fill:"rgba(0,245,255,.12)"},{points:["D","B","C"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"AD",count:1},{line:"DC",count:1}],angles:[{vertex:"D",rays:["A","B"],type:1},{vertex:"D",rays:["C","B"],type:1}],rightAngles:[],parallel:[]}},
+        given:["AD ≅ DC","∠ADB ≅ ∠CDB","BD shared"],prove:"△ABD ≅ △CBD",
+        proof:[{statement:"AD ≅ DC",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"∠ADB ≅ ∠CDB",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"BD ≅ BD",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△ABD ≅ △CBD",reason:"SAS Congruence",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["△ABD ≅ △CBD","BD ≅ BD","∠ADB ≅ ∠CDB","AD ≅ DC"],reasons:["Given","Reflexive Property","SAS Congruence","SSS Congruence","ASA Congruence","AAS Congruence","HL Congruence"]}},
+    
+    {id:2,category:'triangle-practice',topic:"Triangle Congruence",title:"SAS Congruence II",mixedTitle:"Triangle Proof #2",mixedTopic:"Mystery",description:"Overlapping triangles",mixedDescription:"Which theorem applies?",difficulty:"medium",xp:75,
+        diagram:{points:[{id:"A",x:160,y:30,label:"A"},{id:"B",x:60,y:220,label:"B"},{id:"C",x:260,y:220,label:"C"},{id:"D",x:110,y:125,label:"D"},{id:"E",x:210,y:125,label:"E"}],lines:[{id:"AB",from:"A",to:"B"},{id:"AC",from:"A",to:"C"},{id:"BC",from:"B",to:"C"},{id:"DE",from:"D",to:"E"}],shapes:[{points:["A","D","E"],fill:"rgba(0,245,255,.12)"}],givenMarks:{ticks:[{line:"AB",count:1},{line:"AC",count:1}],angles:[{vertex:"A",rays:["B","C"],type:1}],rightAngles:[],parallel:[]}},
+        given:["AB ≅ AC","D is midpoint of AB","E is midpoint of AC"],prove:"△ADE ≅ △AED",
+        proof:[{statement:"AB ≅ AC",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"D is midpoint of AB",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"AD ≅ ½AB",reason:"Def. of Midpoint",prefilled:{easy:true,medium:false,hard:false}},{statement:"E is midpoint of AC",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"AE ≅ ½AC",reason:"Def. of Midpoint",prefilled:{easy:false,medium:false,hard:false}},{statement:"AD ≅ AE",reason:"Division Property",prefilled:{easy:false,medium:false,hard:false}},{statement:"∠A ≅ ∠A",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△ADE ≅ △AED",reason:"SAS Congruence",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["△ADE ≅ △AED","AD ≅ AE","AE ≅ ½AC","AD ≅ ½AB","∠A ≅ ∠A"],reasons:["Given","Def. of Midpoint","Division Property","Reflexive Property","SAS Congruence","SSS Congruence","ASA Congruence"]}},
+
+    // TRIANGLE CONGRUENCE - ASA
+    {id:3,category:'triangle-practice',topic:"Triangle Congruence",title:"ASA Congruence I",mixedTitle:"Triangle Proof #3",mixedTopic:"Mystery",description:"Angle-Side-Angle",mixedDescription:"Which theorem applies?",difficulty:"easy",xp:50,
+        diagram:{points:[{id:"P",x:50,y:50,label:"P"},{id:"Q",x:270,y:50,label:"Q"},{id:"R",x:270,y:230,label:"R"},{id:"S",x:50,y:230,label:"S"}],lines:[{id:"PQ",from:"P",to:"Q"},{id:"QR",from:"Q",to:"R"},{id:"RS",from:"R",to:"S"},{id:"SP",from:"S",to:"P"},{id:"PR",from:"P",to:"R",style:"dashed"}],shapes:[{points:["P","Q","R"],fill:"rgba(0,245,255,.12)"},{points:["P","R","S"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[],angles:[{vertex:"P",rays:["Q","R"],type:1},{vertex:"R",rays:["S","P"],type:1},{vertex:"R",rays:["Q","P"],type:2},{vertex:"P",rays:["S","R"],type:2}],rightAngles:[],parallel:[{line1:"PQ",line2:"RS"}]}},
+        given:["PQRS is a parallelogram","PR is diagonal"],prove:"△PQR ≅ △RSP",
+        proof:[{statement:"PQRS is a parallelogram",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"PQ ∥ SR",reason:"Def. of Parallelogram",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠QPR ≅ ∠SRP",reason:"Alt. Interior Angles",prefilled:{easy:false,medium:false,hard:false}},{statement:"QR ∥ PS",reason:"Def. of Parallelogram",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠QRP ≅ ∠SPR",reason:"Alt. Interior Angles",prefilled:{easy:false,medium:false,hard:false}},{statement:"PR ≅ PR",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△PQR ≅ △RSP",reason:"ASA Congruence",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["△PQR ≅ △RSP","∠QPR ≅ ∠SRP","∠QRP ≅ ∠SPR","PR ≅ PR","PQ ∥ SR","QR ∥ PS"],reasons:["Given","Def. of Parallelogram","Alt. Interior Angles","Reflexive Property","ASA Congruence","SAS Congruence","SSS Congruence","AAS Congruence"]}},
+
+    {id:4,category:'triangle-practice',topic:"Triangle Congruence",title:"ASA Congruence II",mixedTitle:"Triangle Proof #4",mixedTopic:"Mystery",description:"Vertical angles setup",mixedDescription:"Which theorem applies?",difficulty:"medium",xp:75,
+        diagram:{points:[{id:"A",x:50,y:60,label:"A"},{id:"B",x:270,y:60,label:"B"},{id:"C",x:160,y:140,label:"C"},{id:"D",x:50,y:220,label:"D"},{id:"E",x:270,y:220,label:"E"}],lines:[{id:"AC",from:"A",to:"C"},{id:"CD",from:"C",to:"D"},{id:"BC",from:"B",to:"C"},{id:"CE",from:"C",to:"E"}],shapes:[{points:["A","C","B"],fill:"rgba(0,245,255,.12)"},{points:["D","C","E"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"AC",count:1},{line:"CE",count:1}],angles:[{vertex:"A",rays:["C","B"],type:1},{vertex:"E",rays:["C","D"],type:1}],rightAngles:[],parallel:[]}},
+        given:["AC ≅ CE","∠A ≅ ∠E","A, C, E are collinear"],prove:"△ABC ≅ △EDC",
+        proof:[{statement:"AC ≅ CE",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"∠A ≅ ∠E",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠ACB ≅ ∠ECD",reason:"Vertical Angles",prefilled:{easy:false,medium:false,hard:false}},{statement:"△ABC ≅ △EDC",reason:"ASA Congruence",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["△ABC ≅ △EDC","∠ACB ≅ ∠ECD","AC ≅ CE","∠A ≅ ∠E"],reasons:["Given","Vertical Angles","ASA Congruence","SAS Congruence","AAS Congruence","SSS Congruence"]}},
+
+    // TRIANGLE CONGRUENCE - SSS  
+    {id:5,category:'triangle-practice',topic:"Triangle Congruence",title:"SSS Congruence I",mixedTitle:"Triangle Proof #5",mixedTopic:"Mystery",description:"Three sides equal",mixedDescription:"Which theorem applies?",difficulty:"medium",xp:75,
+        diagram:{points:[{id:"W",x:160,y:30,label:"W"},{id:"X",x:50,y:140,label:"X"},{id:"Y",x:160,y:250,label:"Y"},{id:"Z",x:270,y:140,label:"Z"}],lines:[{id:"WX",from:"W",to:"X"},{id:"XY",from:"X",to:"Y"},{id:"YZ",from:"Y",to:"Z"},{id:"ZW",from:"Z",to:"W"},{id:"WY",from:"W",to:"Y",style:"dashed"}],shapes:[{points:["W","X","Y"],fill:"rgba(0,245,255,.12)"},{points:["W","Y","Z"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"WX",count:1},{line:"ZW",count:1},{line:"XY",count:2},{line:"YZ",count:2}],angles:[],rightAngles:[],parallel:[]}},
+        given:["WX ≅ WZ","XY ≅ YZ"],prove:"△WXY ≅ △WZY",
+        proof:[{statement:"WX ≅ WZ",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"XY ≅ YZ",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"WY ≅ WY",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△WXY ≅ △WZY",reason:"SSS Congruence",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["△WXY ≅ △WZY","WY ≅ WY","WX ≅ WZ","XY ≅ YZ"],reasons:["Given","Reflexive Property","SSS Congruence","SAS Congruence","ASA Congruence","AAS Congruence","HL Congruence"]}},
+
+    {id:6,category:'triangle-practice',topic:"Triangle Congruence",title:"SSS Congruence II",mixedTitle:"Triangle Proof #6",mixedTopic:"Mystery",description:"Kite diagonal",mixedDescription:"Which theorem applies?",difficulty:"easy",xp:50,
+        diagram:{points:[{id:"K",x:160,y:30,label:"K"},{id:"I",x:60,y:130,label:"I"},{id:"T",x:160,y:250,label:"T"},{id:"E",x:260,y:130,label:"E"}],lines:[{id:"KI",from:"K",to:"I"},{id:"IT",from:"I",to:"T"},{id:"TE",from:"T",to:"E"},{id:"EK",from:"E",to:"K"},{id:"KT",from:"K",to:"T",style:"dashed"}],shapes:[{points:["K","I","T"],fill:"rgba(0,245,255,.12)"},{points:["K","T","E"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"KI",count:1},{line:"KE",count:1},{line:"IT",count:2},{line:"TE",count:2}],angles:[],rightAngles:[],parallel:[]}},
+        given:["KI ≅ KE","IT ≅ TE"],prove:"△KIT ≅ △KET",
+        proof:[{statement:"KI ≅ KE",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"IT ≅ TE",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"KT ≅ KT",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△KIT ≅ △KET",reason:"SSS Congruence",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["△KIT ≅ △KET","KT ≅ KT","KI ≅ KE","IT ≅ TE"],reasons:["Given","Reflexive Property","SSS Congruence","SAS Congruence","ASA Congruence","AAS Congruence"]}},
+
+    // TRIANGLE CONGRUENCE - AAS
+    {id:7,category:'triangle-practice',topic:"Triangle Congruence",title:"AAS Congruence I",mixedTitle:"Triangle Proof #7",mixedTopic:"Mystery",description:"Angle-Angle-Side",mixedDescription:"Which theorem applies?",difficulty:"medium",xp:75,
+        diagram:{points:[{id:"J",x:50,y:70,label:"J"},{id:"K",x:160,y:240,label:"K"},{id:"L",x:270,y:70,label:"L"},{id:"M",x:160,y:70,label:"M"}],lines:[{id:"JK",from:"J",to:"K"},{id:"KL",from:"K",to:"L"},{id:"JM",from:"J",to:"M"},{id:"ML",from:"M",to:"L"},{id:"MK",from:"M",to:"K"}],shapes:[{points:["J","K","M"],fill:"rgba(0,245,255,.12)"},{points:["M","K","L"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"JM",count:1},{line:"ML",count:1}],angles:[{vertex:"J",rays:["K","M"],type:1},{vertex:"L",rays:["K","M"],type:1},{vertex:"K",rays:["J","M"],type:2},{vertex:"K",rays:["L","M"],type:2}],rightAngles:[],parallel:[]}},
+        given:["JM ≅ ML","∠J ≅ ∠L","∠JKM ≅ ∠LKM"],prove:"△JKM ≅ △LKM",
+        proof:[{statement:"∠J ≅ ∠L",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"∠JKM ≅ ∠LKM",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"MK ≅ MK",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△JKM ≅ △LKM",reason:"AAS Congruence",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["△JKM ≅ △LKM","MK ≅ MK","∠J ≅ ∠L","∠JKM ≅ ∠LKM","JM ≅ ML"],reasons:["Given","Reflexive Property","AAS Congruence","ASA Congruence","SAS Congruence","SSS Congruence","HL Congruence"]}},
+
+    {id:8,category:'triangle-practice',topic:"Triangle Congruence",title:"AAS Congruence II",mixedTitle:"Triangle Proof #8",mixedTopic:"Mystery",description:"Parallel lines setup",mixedDescription:"Which theorem applies?",difficulty:"hard",xp:100,
+        diagram:{points:[{id:"A",x:50,y:80,label:"A"},{id:"B",x:270,y:80,label:"B"},{id:"C",x:50,y:200,label:"C"},{id:"D",x:270,y:200,label:"D"},{id:"E",x:160,y:140,label:"E"}],lines:[{id:"AB",from:"A",to:"B"},{id:"CD",from:"C",to:"D"},{id:"AE",from:"A",to:"E"},{id:"ED",from:"E",to:"D"},{id:"CE",from:"C",to:"E"},{id:"EB",from:"E",to:"B"}],shapes:[{points:["A","E","B"],fill:"rgba(0,245,255,.12)"},{points:["C","E","D"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"AE",count:1},{line:"ED",count:1}],angles:[],rightAngles:[],parallel:[{line1:"AB",line2:"CD"}]}},
+        given:["AB ∥ CD","AE ≅ ED","E is intersection point"],prove:"△AEB ≅ △DEC",
+        proof:[{statement:"AB ∥ CD",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"∠EAB ≅ ∠EDC",reason:"Alt. Interior Angles",prefilled:{easy:false,medium:false,hard:false}},{statement:"∠EBA ≅ ∠ECD",reason:"Alt. Interior Angles",prefilled:{easy:false,medium:false,hard:false}},{statement:"AE ≅ ED",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"△AEB ≅ △DEC",reason:"AAS Congruence",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["△AEB ≅ △DEC","∠EAB ≅ ∠EDC","∠EBA ≅ ∠ECD","AE ≅ ED","AB ∥ CD"],reasons:["Given","Alt. Interior Angles","AAS Congruence","ASA Congruence","SAS Congruence","Corresponding Angles"]}},
+
+    // TRIANGLE CONGRUENCE - HL
+    {id:9,category:'triangle-practice',topic:"Right Triangles",title:"HL Congruence I",mixedTitle:"Triangle Proof #9",mixedTopic:"Mystery",description:"Hypotenuse-Leg",mixedDescription:"Which theorem applies?",difficulty:"hard",xp:100,
+        diagram:{points:[{id:"A",x:30,y:50,label:"A"},{id:"B",x:30,y:190,label:"B"},{id:"C",x:130,y:190,label:"C"},{id:"D",x:290,y:50,label:"D"},{id:"E",x:290,y:190,label:"E"},{id:"F",x:190,y:190,label:"F"}],lines:[{id:"AB",from:"A",to:"B"},{id:"BC",from:"B",to:"C"},{id:"CA",from:"C",to:"A"},{id:"DE",from:"D",to:"E"},{id:"EF",from:"E",to:"F"},{id:"FD",from:"F",to:"D"}],shapes:[{points:["A","B","C"],fill:"rgba(0,245,255,.12)"},{points:["D","E","F"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"CA",count:1},{line:"FD",count:1},{line:"AB",count:2},{line:"DE",count:2}],angles:[],rightAngles:[{vertex:"B",rays:["A","C"]},{vertex:"E",rays:["D","F"]}],parallel:[]}},
+        given:["∠B, ∠E are right angles","AC ≅ DF","AB ≅ DE"],prove:"△ABC ≅ △DEF",
+        proof:[{statement:"∠B and ∠E are right angles",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"△ABC and △DEF are right triangles",reason:"Def. of Right Triangle",prefilled:{easy:true,medium:false,hard:false}},{statement:"AC ≅ DF",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"AB ≅ DE",reason:"Given",prefilled:{easy:false,medium:false,hard:false}},{statement:"△ABC ≅ △DEF",reason:"HL Congruence",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["△ABC ≅ △DEF","AB ≅ DE","AC ≅ DF","△ABC and △DEF are right triangles","∠B ≅ ∠E"],reasons:["Given","Def. of Right Triangle","HL Congruence","SAS Congruence","SSS Congruence","ASA Congruence","AAS Congruence"]}},
+
+    {id:10,category:'triangle-practice',topic:"Right Triangles",title:"HL Congruence II",mixedTitle:"Triangle Proof #10",mixedTopic:"Mystery",description:"Altitude to hypotenuse",mixedDescription:"Which theorem applies?",difficulty:"medium",xp:75,
+        diagram:{points:[{id:"A",x:50,y:50,label:"A"},{id:"B",x:270,y:200,label:"B"},{id:"C",x:50,y:200,label:"C"},{id:"D",x:130,y:140,label:"D"}],lines:[{id:"AB",from:"A",to:"B"},{id:"BC",from:"B",to:"C"},{id:"CA",from:"C",to:"A"},{id:"CD",from:"C",to:"D"}],shapes:[{points:["A","C","D"],fill:"rgba(0,245,255,.12)"},{points:["D","C","B"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"CA",count:1},{line:"CB",count:1}],angles:[],rightAngles:[{vertex:"C",rays:["A","B"]},{vertex:"D",rays:["A","B"]}],parallel:[]}},
+        given:["∠ACB is a right angle","CD ⊥ AB","CA ≅ CB"],prove:"△ACD ≅ △BCD",
+        proof:[{statement:"∠ACB is a right angle",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"CD ⊥ AB",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠CDA and ∠CDB are right angles",reason:"Def. of Perpendicular",prefilled:{easy:true,medium:false,hard:false}},{statement:"CA ≅ CB",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"CD ≅ CD",reason:"Reflexive Property",prefilled:{easy:false,medium:false,hard:false}},{statement:"△ACD ≅ △BCD",reason:"HL Congruence",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["△ACD ≅ △BCD","CD ≅ CD","CA ≅ CB","∠CDA and ∠CDB are right angles"],reasons:["Given","Def. of Perpendicular","Reflexive Property","HL Congruence","SAS Congruence","SSS Congruence"]}},
+
+    // PARALLEL LINES
+    {id:11,category:'parallel',topic:"Parallel Lines",title:"Alt Interior Angles",mixedTitle:"Parallel Proof #1",mixedTopic:"Parallel",description:"Prove angles congruent",mixedDescription:"Use parallel properties",difficulty:"easy",xp:50,
+        diagram:{points:[{id:"A",x:20,y:80,label:""},{id:"B",x:300,y:80,label:""},{id:"C",x:20,y:200,label:""},{id:"D",x:300,y:200,label:""},{id:"E",x:100,y:20,label:"E"},{id:"F",x:220,y:260,label:"F"},{id:"P",x:130,y:80,label:"1"},{id:"Q",x:160,y:200,label:"2"}],lines:[{id:"AB",from:"A",to:"B"},{id:"CD",from:"C",to:"D"},{id:"EF",from:"E",to:"F"}],shapes:[],givenMarks:{ticks:[],angles:[{vertex:"P",rays:["E","B"],type:1},{vertex:"Q",rays:["P","D"],type:1}],rightAngles:[],parallel:[{line1:"AB",line2:"CD"}]}},
+        given:["Line AB ∥ Line CD","EF is transversal"],prove:"∠1 ≅ ∠2",
+        proof:[{statement:"AB ∥ CD",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"EF is a transversal",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠1 and ∠2 are alt. interior angles",reason:"Def. of Alt. Interior Angles",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠1 ≅ ∠2",reason:"Alt. Interior Angles Theorem",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["∠1 ≅ ∠2","∠1 and ∠2 are alt. interior angles","AB ∥ CD","EF is a transversal"],reasons:["Given","Def. of Alt. Interior Angles","Alt. Interior Angles Theorem","Corresponding Angles Postulate","Vertical Angles Theorem"]}},
+
+    {id:12,category:'parallel',topic:"Parallel Lines",title:"Corresponding Angles",mixedTitle:"Parallel Proof #2",mixedTopic:"Parallel",description:"Corresponding angles equal",mixedDescription:"Use parallel properties",difficulty:"easy",xp:50,
+        diagram:{points:[{id:"A",x:20,y:80,label:""},{id:"B",x:300,y:80,label:""},{id:"C",x:20,y:200,label:""},{id:"D",x:300,y:200,label:""},{id:"E",x:180,y:20,label:"E"},{id:"F",x:140,y:260,label:"F"},{id:"P",x:170,y:80,label:"1"},{id:"Q",x:150,y:200,label:"2"}],lines:[{id:"AB",from:"A",to:"B"},{id:"CD",from:"C",to:"D"},{id:"EF",from:"E",to:"F"}],shapes:[],givenMarks:{ticks:[],angles:[{vertex:"P",rays:["E","B"],type:1},{vertex:"Q",rays:["P","D"],type:1}],rightAngles:[],parallel:[{line1:"AB",line2:"CD"}]}},
+        given:["Line AB ∥ Line CD","EF is transversal"],prove:"∠1 ≅ ∠2",
+        proof:[{statement:"AB ∥ CD",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"EF is a transversal",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠1 and ∠2 are corresponding angles",reason:"Def. of Corresponding Angles",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠1 ≅ ∠2",reason:"Corresponding Angles Postulate",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["∠1 ≅ ∠2","∠1 and ∠2 are corresponding angles","AB ∥ CD","EF is a transversal"],reasons:["Given","Def. of Corresponding Angles","Corresponding Angles Postulate","Alt. Interior Angles Theorem","Vertical Angles Theorem"]}},
+
+    {id:13,category:'parallel',topic:"Parallel Lines",title:"Same-Side Interior",mixedTitle:"Parallel Proof #3",mixedTopic:"Parallel",description:"Supplementary angles",mixedDescription:"Use parallel properties",difficulty:"medium",xp:75,
+        diagram:{points:[{id:"A",x:20,y:80,label:""},{id:"B",x:300,y:80,label:""},{id:"C",x:20,y:200,label:""},{id:"D",x:300,y:200,label:""},{id:"E",x:120,y:20,label:"E"},{id:"F",x:200,y:260,label:"F"},{id:"P",x:140,y:80,label:"1"},{id:"Q",x:170,y:200,label:"2"}],lines:[{id:"AB",from:"A",to:"B"},{id:"CD",from:"C",to:"D"},{id:"EF",from:"E",to:"F"}],shapes:[],givenMarks:{ticks:[],angles:[{vertex:"P",rays:["A","F"],type:1},{vertex:"Q",rays:["P","D"],type:2}],rightAngles:[],parallel:[{line1:"AB",line2:"CD"}]}},
+        given:["Line AB ∥ Line CD","EF is transversal"],prove:"∠1 + ∠2 = 180°",
+        proof:[{statement:"AB ∥ CD",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"EF is a transversal",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠1 and ∠2 are same-side interior angles",reason:"Def. of Same-Side Interior Angles",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠1 + ∠2 = 180°",reason:"Same-Side Interior Angles Theorem",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["∠1 + ∠2 = 180°","∠1 and ∠2 are same-side interior angles","AB ∥ CD","EF is a transversal"],reasons:["Given","Def. of Same-Side Interior Angles","Same-Side Interior Angles Theorem","Corresponding Angles Postulate","Alt. Interior Angles Theorem"]}},
+
+    {id:14,category:'parallel',topic:"Parallel Lines",title:"Prove Lines Parallel",mixedTitle:"Parallel Proof #4",mixedTopic:"Parallel",description:"Converse theorem",mixedDescription:"Use parallel properties",difficulty:"hard",xp:100,
+        diagram:{points:[{id:"A",x:20,y:80,label:""},{id:"B",x:300,y:80,label:""},{id:"C",x:20,y:200,label:""},{id:"D",x:300,y:200,label:""},{id:"E",x:100,y:20,label:"E"},{id:"F",x:220,y:260,label:"F"},{id:"P",x:130,y:80,label:"1"},{id:"Q",x:160,y:200,label:"2"}],lines:[{id:"AB",from:"A",to:"B"},{id:"CD",from:"C",to:"D"},{id:"EF",from:"E",to:"F"}],shapes:[],givenMarks:{ticks:[],angles:[{vertex:"P",rays:["E","B"],type:1},{vertex:"Q",rays:["P","D"],type:1}],rightAngles:[],parallel:[]}},
+        given:["∠1 ≅ ∠2","EF is transversal"],prove:"AB ∥ CD",
+        proof:[{statement:"∠1 ≅ ∠2",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"EF is a transversal",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠1 and ∠2 are alt. interior angles",reason:"Def. of Alt. Interior Angles",prefilled:{easy:true,medium:false,hard:false}},{statement:"AB ∥ CD",reason:"Converse Alt. Interior Angles",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["AB ∥ CD","∠1 and ∠2 are alt. interior angles","∠1 ≅ ∠2","EF is a transversal"],reasons:["Given","Def. of Alt. Interior Angles","Converse Alt. Interior Angles","Converse Corresponding Angles","Alt. Interior Angles Theorem"]}},
+
+    // TRIANGLE PROPERTIES
+    {id:15,category:'triangle-props',topic:"Triangle Properties",title:"Isosceles Triangle",mixedTitle:"Triangle Props #1",mixedTopic:"Properties",description:"Base angles theorem",mixedDescription:"Triangle property proof",difficulty:"medium",xp:75,
+        diagram:{points:[{id:"A",x:160,y:30,label:"A"},{id:"B",x:60,y:220,label:"B"},{id:"C",x:260,y:220,label:"C"},{id:"D",x:160,y:220,label:"D"}],lines:[{id:"AB",from:"A",to:"B"},{id:"AC",from:"A",to:"C"},{id:"BC",from:"B",to:"C"},{id:"AD",from:"A",to:"D",style:"dashed"}],shapes:[{points:["A","B","D"],fill:"rgba(0,245,255,.12)"},{points:["A","D","C"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"AB",count:1},{line:"AC",count:1}],angles:[],rightAngles:[{vertex:"D",rays:["A","C"]}],parallel:[]}},
+        given:["AB ≅ AC","AD ⊥ BC"],prove:"∠B ≅ ∠C",
+        proof:[{statement:"AB ≅ AC",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"AD ⊥ BC",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠ADB ≅ ∠ADC",reason:"Def. of Perpendicular",prefilled:{easy:true,medium:false,hard:false}},{statement:"AD ≅ AD",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△ABD ≅ △ACD",reason:"HL Congruence",prefilled:{easy:false,medium:false,hard:false}},{statement:"∠B ≅ ∠C",reason:"CPCTC",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["∠B ≅ ∠C","△ABD ≅ △ACD","AD ≅ AD","∠ADB ≅ ∠ADC"],reasons:["Given","Def. of Perpendicular","Reflexive Property","HL Congruence","CPCTC","SAS Congruence"]}},
+
+    {id:16,category:'triangle-props',topic:"Triangle Properties",title:"Exterior Angle",mixedTitle:"Triangle Props #2",mixedTopic:"Properties",description:"Exterior angle theorem",mixedDescription:"Triangle property proof",difficulty:"medium",xp:75,
+        diagram:{points:[{id:"A",x:80,y:60,label:"A"},{id:"B",x:50,y:200,label:"B"},{id:"C",x:200,y:200,label:"C"},{id:"D",x:280,y:200,label:"D"}],lines:[{id:"AB",from:"A",to:"B"},{id:"AC",from:"A",to:"C"},{id:"BC",from:"B",to:"C"},{id:"CD",from:"C",to:"D"}],shapes:[{points:["A","B","C"],fill:"rgba(0,245,255,.12)"}],givenMarks:{ticks:[],angles:[{vertex:"A",rays:["B","C"],type:1},{vertex:"B",rays:["A","C"],type:2}],rightAngles:[],parallel:[]}},
+        given:["△ABC with exterior ∠ACD"],prove:"m∠ACD = m∠A + m∠B",
+        proof:[{statement:"m∠A + m∠B + m∠ACB = 180°",reason:"Triangle Angle Sum",prefilled:{easy:true,medium:true,hard:false}},{statement:"∠ACB and ∠ACD are supplementary",reason:"Linear Pair Postulate",prefilled:{easy:true,medium:false,hard:false}},{statement:"m∠ACB + m∠ACD = 180°",reason:"Def. of Supplementary",prefilled:{easy:true,medium:false,hard:false}},{statement:"m∠A + m∠B + m∠ACB = m∠ACB + m∠ACD",reason:"Substitution",prefilled:{easy:false,medium:false,hard:false}},{statement:"m∠A + m∠B = m∠ACD",reason:"Subtraction Property",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["m∠A + m∠B = m∠ACD","m∠A + m∠B + m∠ACB = m∠ACB + m∠ACD","m∠ACB + m∠ACD = 180°","∠ACB and ∠ACD are supplementary","m∠A + m∠B + m∠ACB = 180°"],reasons:["Triangle Angle Sum","Linear Pair Postulate","Def. of Supplementary","Substitution","Subtraction Property"]}},
+
+    {id:17,category:'triangle-props',topic:"Triangle Properties",title:"Triangle Angle Sum",mixedTitle:"Triangle Props #3",mixedTopic:"Properties",description:"Interior angles = 180°",mixedDescription:"Triangle property proof",difficulty:"hard",xp:100,
+        diagram:{points:[{id:"A",x:160,y:40,label:"A"},{id:"B",x:60,y:200,label:"B"},{id:"C",x:260,y:200,label:"C"},{id:"D",x:30,y:40,label:"D"},{id:"E",x:290,y:40,label:"E"}],lines:[{id:"AB",from:"A",to:"B"},{id:"AC",from:"A",to:"C"},{id:"BC",from:"B",to:"C"},{id:"DE",from:"D",to:"E"}],shapes:[{points:["A","B","C"],fill:"rgba(0,245,255,.12)"}],givenMarks:{ticks:[],angles:[{vertex:"A",rays:["B","C"],type:1},{vertex:"B",rays:["A","C"],type:2},{vertex:"C",rays:["A","B"],type:3}],rightAngles:[],parallel:[{line1:"DE",line2:"BC"}]}},
+        given:["△ABC","Line DE through A ∥ BC"],prove:"m∠A + m∠B + m∠C = 180°",
+        proof:[{statement:"DE ∥ BC",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"∠DAB ≅ ∠ABC",reason:"Alt. Interior Angles",prefilled:{easy:false,medium:false,hard:false}},{statement:"∠EAC ≅ ∠ACB",reason:"Alt. Interior Angles",prefilled:{easy:false,medium:false,hard:false}},{statement:"m∠DAB + m∠BAC + m∠EAC = 180°",reason:"Angles on a Line",prefilled:{easy:true,medium:false,hard:false}},{statement:"m∠ABC + m∠BAC + m∠ACB = 180°",reason:"Substitution",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["m∠ABC + m∠BAC + m∠ACB = 180°","∠DAB ≅ ∠ABC","∠EAC ≅ ∠ACB","m∠DAB + m∠BAC + m∠EAC = 180°","DE ∥ BC"],reasons:["Given","Alt. Interior Angles","Angles on a Line","Substitution","Corresponding Angles"]}},
+
+    {id:18,category:'triangle-props',topic:"Triangle Properties",title:"Midsegment Theorem",mixedTitle:"Triangle Props #4",mixedTopic:"Properties",description:"Midsegment parallel to base",mixedDescription:"Triangle property proof",difficulty:"hard",xp:100,
+        diagram:{points:[{id:"A",x:160,y:30,label:"A"},{id:"B",x:50,y:230,label:"B"},{id:"C",x:270,y:230,label:"C"},{id:"D",x:105,y:130,label:"D"},{id:"E",x:215,y:130,label:"E"}],lines:[{id:"AB",from:"A",to:"B"},{id:"AC",from:"A",to:"C"},{id:"BC",from:"B",to:"C"},{id:"DE",from:"D",to:"E"}],shapes:[{points:["A","D","E"],fill:"rgba(0,245,255,.12)"}],givenMarks:{ticks:[{line:"AD",count:1},{line:"DB",count:1},{line:"AE",count:2},{line:"EC",count:2}],angles:[],rightAngles:[],parallel:[]}},
+        given:["D is midpoint of AB","E is midpoint of AC"],prove:"DE ∥ BC",
+        proof:[{statement:"D is midpoint of AB",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"E is midpoint of AC",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"AD = ½AB, AE = ½AC",reason:"Def. of Midpoint",prefilled:{easy:true,medium:false,hard:false}},{statement:"AD/AB = AE/AC = ½",reason:"Division Property",prefilled:{easy:false,medium:false,hard:false}},{statement:"∠A ≅ ∠A",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△ADE ~ △ABC",reason:"SAS Similarity",prefilled:{easy:false,medium:false,hard:false}},{statement:"∠ADE ≅ ∠ABC",reason:"Corresponding Angles of Similar △",prefilled:{easy:false,medium:false,hard:false}},{statement:"DE ∥ BC",reason:"Converse Corresponding Angles",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["DE ∥ BC","∠ADE ≅ ∠ABC","△ADE ~ △ABC","∠A ≅ ∠A","AD/AB = AE/AC = ½","AD = ½AB, AE = ½AC"],reasons:["Given","Def. of Midpoint","Division Property","Reflexive Property","SAS Similarity","Corresponding Angles of Similar △","Converse Corresponding Angles"]}},
+
+    // QUADRILATERALS
+    {id:19,category:'quadrilaterals',topic:"Quadrilaterals",title:"Parallelogram Sides",mixedTitle:"Quad Proof #1",mixedTopic:"Quadrilateral",description:"Opposite sides congruent",mixedDescription:"Quadrilateral proof",difficulty:"medium",xp:75,
+        diagram:{points:[{id:"A",x:80,y:60,label:"A"},{id:"B",x:240,y:60,label:"B"},{id:"C",x:280,y:200,label:"C"},{id:"D",x:40,y:200,label:"D"}],lines:[{id:"AB",from:"A",to:"B"},{id:"BC",from:"B",to:"C"},{id:"CD",from:"C",to:"D"},{id:"DA",from:"D",to:"A"},{id:"AC",from:"A",to:"C",style:"dashed"}],shapes:[{points:["A","B","C"],fill:"rgba(0,245,255,.12)"},{points:["A","C","D"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[],angles:[{vertex:"A",rays:["B","C"],type:1},{vertex:"C",rays:["D","A"],type:1},{vertex:"A",rays:["D","C"],type:2},{vertex:"C",rays:["B","A"],type:2}],rightAngles:[],parallel:[{line1:"AB",line2:"CD"},{line1:"BC",line2:"DA"}]}},
+        given:["ABCD is a parallelogram"],prove:"AB ≅ CD and BC ≅ DA",
+        proof:[{statement:"ABCD is a parallelogram",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"AB ∥ CD and BC ∥ DA",reason:"Def. of Parallelogram",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠BAC ≅ ∠DCA",reason:"Alt. Interior Angles",prefilled:{easy:false,medium:false,hard:false}},{statement:"∠BCA ≅ ∠DAC",reason:"Alt. Interior Angles",prefilled:{easy:false,medium:false,hard:false}},{statement:"AC ≅ AC",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△ABC ≅ △CDA",reason:"ASA Congruence",prefilled:{easy:false,medium:false,hard:false}},{statement:"AB ≅ CD and BC ≅ DA",reason:"CPCTC",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["AB ≅ CD and BC ≅ DA","△ABC ≅ △CDA","AC ≅ AC","∠BAC ≅ ∠DCA","∠BCA ≅ ∠DAC","AB ∥ CD and BC ∥ DA"],reasons:["Given","Def. of Parallelogram","Alt. Interior Angles","Reflexive Property","ASA Congruence","CPCTC"]}},
+
+    {id:20,category:'quadrilaterals',topic:"Quadrilaterals",title:"Parallelogram Diagonals",mixedTitle:"Quad Proof #2",mixedTopic:"Quadrilateral",description:"Diagonals bisect each other",mixedDescription:"Quadrilateral proof",difficulty:"hard",xp:100,
+        diagram:{points:[{id:"A",x:80,y:60,label:"A"},{id:"B",x:240,y:60,label:"B"},{id:"C",x:280,y:200,label:"C"},{id:"D",x:40,y:200,label:"D"},{id:"E",x:160,y:130,label:"E"}],lines:[{id:"AB",from:"A",to:"B"},{id:"BC",from:"B",to:"C"},{id:"CD",from:"C",to:"D"},{id:"DA",from:"D",to:"A"},{id:"AC",from:"A",to:"C",style:"dashed"},{id:"BD",from:"B",to:"D",style:"dashed"}],shapes:[{points:["A","B","E"],fill:"rgba(0,245,255,.12)"},{points:["C","D","E"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[],angles:[{vertex:"A",rays:["B","E"],type:1},{vertex:"C",rays:["D","E"],type:1},{vertex:"E",rays:["A","B"],type:2},{vertex:"E",rays:["C","D"],type:2}],rightAngles:[],parallel:[{line1:"AB",line2:"CD"}]}},
+        given:["ABCD is a parallelogram","Diagonals AC and BD intersect at E"],prove:"AE ≅ CE and BE ≅ DE",
+        proof:[{statement:"ABCD is a parallelogram",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"AB ∥ CD",reason:"Def. of Parallelogram",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠ABE ≅ ∠CDE",reason:"Alt. Interior Angles",prefilled:{easy:false,medium:false,hard:false}},{statement:"∠BAE ≅ ∠DCE",reason:"Alt. Interior Angles",prefilled:{easy:false,medium:false,hard:false}},{statement:"AB ≅ CD",reason:"Opp. Sides of Parallelogram",prefilled:{easy:true,medium:false,hard:false}},{statement:"△ABE ≅ △CDE",reason:"ASA Congruence",prefilled:{easy:false,medium:false,hard:false}},{statement:"AE ≅ CE and BE ≅ DE",reason:"CPCTC",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["AE ≅ CE and BE ≅ DE","△ABE ≅ △CDE","AB ≅ CD","∠ABE ≅ ∠CDE","∠BAE ≅ ∠DCE","AB ∥ CD"],reasons:["Given","Def. of Parallelogram","Alt. Interior Angles","Opp. Sides of Parallelogram","ASA Congruence","CPCTC"]}},
+
+    {id:21,category:'quadrilaterals',topic:"Quadrilaterals",title:"Rectangle Diagonals",mixedTitle:"Quad Proof #3",mixedTopic:"Quadrilateral",description:"Diagonals are congruent",mixedDescription:"Quadrilateral proof",difficulty:"medium",xp:75,
+        diagram:{points:[{id:"A",x:50,y:60,label:"A"},{id:"B",x:270,y:60,label:"B"},{id:"C",x:270,y:200,label:"C"},{id:"D",x:50,y:200,label:"D"}],lines:[{id:"AB",from:"A",to:"B"},{id:"BC",from:"B",to:"C"},{id:"CD",from:"C",to:"D"},{id:"DA",from:"D",to:"A"},{id:"AC",from:"A",to:"C",style:"dashed"},{id:"BD",from:"B",to:"D",style:"dashed"}],shapes:[{points:["A","B","D"],fill:"rgba(0,245,255,.12)"},{points:["B","C","D"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"AD",count:1},{line:"BC",count:1}],angles:[],rightAngles:[{vertex:"A",rays:["B","D"]},{vertex:"B",rays:["A","C"]}],parallel:[]}},
+        given:["ABCD is a rectangle"],prove:"AC ≅ BD",
+        proof:[{statement:"ABCD is a rectangle",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"∠DAB and ∠CBA are right angles",reason:"Def. of Rectangle",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠DAB ≅ ∠CBA",reason:"All Right Angles Congruent",prefilled:{easy:true,medium:false,hard:false}},{statement:"AD ≅ BC",reason:"Opp. Sides of Rectangle",prefilled:{easy:false,medium:false,hard:false}},{statement:"AB ≅ AB",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△DAB ≅ △CBA",reason:"SAS Congruence",prefilled:{easy:false,medium:false,hard:false}},{statement:"AC ≅ BD",reason:"CPCTC",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["AC ≅ BD","△DAB ≅ △CBA","AB ≅ AB","AD ≅ BC","∠DAB ≅ ∠CBA","∠DAB and ∠CBA are right angles"],reasons:["Given","Def. of Rectangle","All Right Angles Congruent","Opp. Sides of Rectangle","Reflexive Property","SAS Congruence","CPCTC"]}},
+
+    {id:22,category:'quadrilaterals',topic:"Quadrilaterals",title:"Rhombus Diagonals",mixedTitle:"Quad Proof #4",mixedTopic:"Quadrilateral",description:"Diagonals are perpendicular",mixedDescription:"Quadrilateral proof",difficulty:"hard",xp:100,
+        diagram:{points:[{id:"A",x:160,y:30,label:"A"},{id:"B",x:280,y:130,label:"B"},{id:"C",x:160,y:230,label:"C"},{id:"D",x:40,y:130,label:"D"},{id:"E",x:160,y:130,label:"E"}],lines:[{id:"AB",from:"A",to:"B"},{id:"BC",from:"B",to:"C"},{id:"CD",from:"C",to:"D"},{id:"DA",from:"D",to:"A"},{id:"AC",from:"A",to:"C",style:"dashed"},{id:"BD",from:"B",to:"D",style:"dashed"}],shapes:[{points:["A","B","E"],fill:"rgba(0,245,255,.12)"},{points:["A","D","E"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"AB",count:1},{line:"BC",count:1},{line:"CD",count:1},{line:"DA",count:1}],angles:[],rightAngles:[],parallel:[]}},
+        given:["ABCD is a rhombus","Diagonals intersect at E"],prove:"AC ⊥ BD",
+        proof:[{statement:"ABCD is a rhombus",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"AB ≅ AD",reason:"Def. of Rhombus",prefilled:{easy:true,medium:false,hard:false}},{statement:"AE ≅ AE",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"BE ≅ DE",reason:"Diagonals Bisect (Parallelogram)",prefilled:{easy:false,medium:false,hard:false}},{statement:"△ABE ≅ △ADE",reason:"SSS Congruence",prefilled:{easy:false,medium:false,hard:false}},{statement:"∠AEB ≅ ∠AED",reason:"CPCTC",prefilled:{easy:false,medium:false,hard:false}},{statement:"∠AEB and ∠AED are supplementary",reason:"Linear Pair Postulate",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠AEB = ∠AED = 90°",reason:"Congruent Supplements",prefilled:{easy:false,medium:false,hard:false}},{statement:"AC ⊥ BD",reason:"Def. of Perpendicular",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["AC ⊥ BD","∠AEB = ∠AED = 90°","∠AEB and ∠AED are supplementary","∠AEB ≅ ∠AED","△ABE ≅ △ADE","BE ≅ DE","AE ≅ AE","AB ≅ AD"],reasons:["Given","Def. of Rhombus","Reflexive Property","Diagonals Bisect (Parallelogram)","SSS Congruence","CPCTC","Linear Pair Postulate","Congruent Supplements","Def. of Perpendicular"]}},
+
+    // CPCTC PROOFS
+    {id:23,category:'cpctc',topic:"CPCTC",title:"Prove Segments Equal",mixedTitle:"CPCTC Proof #1",mixedTopic:"CPCTC",description:"Use congruent triangles",mixedDescription:"Apply CPCTC",difficulty:"medium",xp:75,
+        diagram:{points:[{id:"A",x:160,y:30,label:"A"},{id:"B",x:60,y:200,label:"B"},{id:"C",x:260,y:200,label:"C"},{id:"D",x:160,y:200,label:"D"}],lines:[{id:"AB",from:"A",to:"B"},{id:"AC",from:"A",to:"C"},{id:"BD",from:"B",to:"D"},{id:"DC",from:"D",to:"C"},{id:"AD",from:"A",to:"D"}],shapes:[{points:["A","B","D"],fill:"rgba(0,245,255,.12)"},{points:["A","D","C"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"AB",count:1},{line:"AC",count:1}],angles:[{vertex:"B",rays:["A","D"],type:1},{vertex:"C",rays:["A","D"],type:1}],rightAngles:[],parallel:[]}},
+        given:["AB ≅ AC","∠ABD ≅ ∠ACD"],prove:"BD ≅ CD",
+        proof:[{statement:"AB ≅ AC",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"∠ABD ≅ ∠ACD",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"AD ≅ AD",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△ABD ≅ △ACD",reason:"AAS Congruence",prefilled:{easy:false,medium:false,hard:false}},{statement:"BD ≅ CD",reason:"CPCTC",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["BD ≅ CD","△ABD ≅ △ACD","AD ≅ AD","∠ABD ≅ ∠ACD","AB ≅ AC"],reasons:["Given","Reflexive Property","AAS Congruence","CPCTC","SAS Congruence","ASA Congruence"]}},
+
+    {id:24,category:'cpctc',topic:"CPCTC",title:"Prove Angles Equal",mixedTitle:"CPCTC Proof #2",mixedTopic:"CPCTC",description:"Use congruent triangles",mixedDescription:"Apply CPCTC",difficulty:"medium",xp:75,
+        diagram:{points:[{id:"P",x:50,y:130,label:"P"},{id:"Q",x:160,y:40,label:"Q"},{id:"R",x:270,y:130,label:"R"},{id:"S",x:160,y:220,label:"S"}],lines:[{id:"PQ",from:"P",to:"Q"},{id:"QR",from:"Q",to:"R"},{id:"RS",from:"R",to:"S"},{id:"SP",from:"S",to:"P"},{id:"QS",from:"Q",to:"S",style:"dashed"}],shapes:[{points:["P","Q","S"],fill:"rgba(0,245,255,.12)"},{points:["Q","R","S"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"PQ",count:1},{line:"QR",count:1},{line:"SP",count:2},{line:"RS",count:2}],angles:[],rightAngles:[],parallel:[]}},
+        given:["PQ ≅ QR","SP ≅ RS"],prove:"∠P ≅ ∠R",
+        proof:[{statement:"PQ ≅ QR",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"SP ≅ RS",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"QS ≅ QS",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△PQS ≅ △RQS",reason:"SSS Congruence",prefilled:{easy:false,medium:false,hard:false}},{statement:"∠P ≅ ∠R",reason:"CPCTC",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["∠P ≅ ∠R","△PQS ≅ △RQS","QS ≅ QS","SP ≅ RS","PQ ≅ QR"],reasons:["Given","Reflexive Property","SSS Congruence","CPCTC","SAS Congruence","AAS Congruence"]}},
+
+    {id:25,category:'cpctc',topic:"CPCTC",title:"Perpendicular Bisector",mixedTitle:"CPCTC Proof #3",mixedTopic:"CPCTC",description:"Points on perp bisector",mixedDescription:"Apply CPCTC",difficulty:"hard",xp:100,
+        diagram:{points:[{id:"A",x:60,y:200,label:"A"},{id:"B",x:260,y:200,label:"B"},{id:"M",x:160,y:200,label:"M"},{id:"P",x:160,y:50,label:"P"}],lines:[{id:"AB",from:"A",to:"B"},{id:"PM",from:"P",to:"M"},{id:"PA",from:"P",to:"A"},{id:"PB",from:"P",to:"B"}],shapes:[{points:["P","A","M"],fill:"rgba(0,245,255,.12)"},{points:["P","M","B"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"AM",count:1},{line:"MB",count:1}],angles:[],rightAngles:[{vertex:"M",rays:["A","P"]}],parallel:[]}},
+        given:["PM ⊥ AB","M is midpoint of AB"],prove:"PA ≅ PB",
+        proof:[{statement:"M is midpoint of AB",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"AM ≅ MB",reason:"Def. of Midpoint",prefilled:{easy:true,medium:false,hard:false}},{statement:"PM ⊥ AB",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠PMA and ∠PMB are right angles",reason:"Def. of Perpendicular",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠PMA ≅ ∠PMB",reason:"All Right Angles Congruent",prefilled:{easy:false,medium:false,hard:false}},{statement:"PM ≅ PM",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△PMA ≅ △PMB",reason:"SAS Congruence",prefilled:{easy:false,medium:false,hard:false}},{statement:"PA ≅ PB",reason:"CPCTC",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["PA ≅ PB","△PMA ≅ △PMB","PM ≅ PM","∠PMA ≅ ∠PMB","∠PMA and ∠PMB are right angles","AM ≅ MB"],reasons:["Given","Def. of Midpoint","Def. of Perpendicular","All Right Angles Congruent","Reflexive Property","SAS Congruence","CPCTC"]}},
+
+    {id:26,category:'cpctc',topic:"CPCTC",title:"Angle Bisector",mixedTitle:"CPCTC Proof #4",mixedTopic:"CPCTC",description:"Angle bisector property",mixedDescription:"Apply CPCTC",difficulty:"hard",xp:100,
+        diagram:{points:[{id:"A",x:160,y:40,label:"A"},{id:"B",x:60,y:220,label:"B"},{id:"C",x:260,y:220,label:"C"},{id:"D",x:160,y:220,label:"D"}],lines:[{id:"AB",from:"A",to:"B"},{id:"AC",from:"A",to:"C"},{id:"AD",from:"A",to:"D"},{id:"BC",from:"B",to:"C"}],shapes:[{points:["A","B","D"],fill:"rgba(0,245,255,.12)"},{points:["A","D","C"],fill:"rgba(255,0,255,.12)"}],givenMarks:{ticks:[{line:"AB",count:1},{line:"AC",count:1}],angles:[{vertex:"A",rays:["B","D"],type:1},{vertex:"A",rays:["D","C"],type:1}],rightAngles:[],parallel:[]}},
+        given:["AB ≅ AC","AD bisects ∠BAC"],prove:"BD ≅ DC",
+        proof:[{statement:"AB ≅ AC",reason:"Given",prefilled:{easy:true,medium:true,hard:false}},{statement:"AD bisects ∠BAC",reason:"Given",prefilled:{easy:true,medium:false,hard:false}},{statement:"∠BAD ≅ ∠CAD",reason:"Def. of Angle Bisector",prefilled:{easy:true,medium:false,hard:false}},{statement:"AD ≅ AD",reason:"Reflexive Property",prefilled:{easy:true,medium:false,hard:false}},{statement:"△ABD ≅ △ACD",reason:"SAS Congruence",prefilled:{easy:false,medium:false,hard:false}},{statement:"BD ≅ DC",reason:"CPCTC",prefilled:{easy:false,medium:false,hard:false}}],
+        bankItems:{statements:["BD ≅ DC","△ABD ≅ △ACD","AD ≅ AD","∠BAD ≅ ∠CAD","AB ≅ AC"],reasons:["Given","Def. of Angle Bisector","Reflexive Property","SAS Congruence","CPCTC","ASA Congruence","AAS Congruence"]}}
+];
+
+const achievements=[{id:1,icon:"🏆",name:"First Proof",unlocked:false},{id:2,icon:"🔥",name:"5 Streak",unlocked:false},{id:3,icon:"⚡",name:"Speed",unlocked:false},{id:4,icon:"🎯",name:"Perfect",unlocked:false},{id:5,icon:"🎲",name:"Mystery",unlocked:false},{id:6,icon:"🌟",name:"Hard",unlocked:false},{id:7,icon:"💯",name:"100 XP",unlocked:false},{id:8,icon:"🚀",name:"Level 5",unlocked:false}];
+
+let gameState={totalXP:0,level:1,streak:0,bestStreak:0,proofsCompleted:0,totalAttempts:0,correctAttempts:0,totalTime:0,completedProofs:[],currentProof:null,currentDifficulty:'easy',hintsRemaining:3,timerInterval:null,timeRemaining:300,startTime:null,currentTool:'select',userAnnotations:[],modalCallback:null,currentCategory:'triangle-mixed',isMixedMode:false,isSubmitted:false};
+
+function loadGameState(){const s=localStorage.getItem('proofQuestState');if(s){const p=JSON.parse(s);gameState={...gameState,...p};}updateUI();}
+function saveGameState(){localStorage.setItem('proofQuestState',JSON.stringify({totalXP:gameState.totalXP,level:gameState.level,streak:gameState.streak,bestStreak:gameState.bestStreak,proofsCompleted:gameState.proofsCompleted,totalAttempts:gameState.totalAttempts,correctAttempts:gameState.correctAttempts,totalTime:gameState.totalTime,completedProofs:gameState.completedProofs}));}
+function updateUI(){document.getElementById('total-xp').textContent=gameState.totalXP;document.getElementById('streak').textContent=gameState.streak;document.getElementById('current-level').textContent=gameState.level;document.getElementById('level-display').textContent=gameState.level;document.getElementById('proofs-completed').textContent=gameState.proofsCompleted;const accuracy=gameState.totalAttempts>0?Math.round((gameState.correctAttempts/gameState.totalAttempts)*100):0;document.getElementById('accuracy-rate').textContent=accuracy+'%';const xpForLevel=gameState.level*100,xpInLevel=gameState.totalXP-((gameState.level-1)*100);document.getElementById('progress-circle').style.strokeDashoffset=214-((xpInLevel/xpForLevel)*214);document.getElementById('xp-to-next').textContent=xpInLevel;document.getElementById('xp-needed').textContent=xpForLevel;document.getElementById('next-level').textContent=gameState.level+1;while(gameState.totalXP>=gameState.level*100)gameState.level++;renderAchievements();}
+function renderCategoryTabs(){const tabs=document.getElementById('category-tabs');tabs.innerHTML='';categories.forEach(cat=>{const btn=document.createElement('button');btn.className=`category-tab ${gameState.currentCategory===cat.id?'active':''}`;btn.textContent=cat.name;btn.onclick=()=>selectCategory(cat.id);tabs.appendChild(btn);});}
+function selectCategory(catId){gameState.currentCategory=catId;renderCategoryTabs();renderProofCards();}
+function getProofsForCategory(catId){if(catId==='all')return proofChallenges;if(catId==='triangle-mixed')return proofChallenges.filter(p=>p.category==='triangle-practice').map(p=>({...p,isMixed:true}));if(catId==='triangle-practice')return proofChallenges.filter(p=>p.category==='triangle-practice');return proofChallenges.filter(p=>p.category===catId);}
+function renderProofCards(){const grid=document.getElementById('proof-grid');grid.innerHTML='';const proofs=getProofsForCategory(gameState.currentCategory);const isMixedCat=categories.find(c=>c.id===gameState.currentCategory)?.mixed;
+proofs.forEach(proof=>{const isCompleted=gameState.completedProofs.includes(proof.id);const isMixed=proof.isMixed||isMixedCat;const card=document.createElement('div');card.className=`proof-card ${isMixed?'mixed':''}`;card.onclick=()=>startProof(proof.id,isMixed);
+const title=isMixed?proof.mixedTitle:proof.title;const topic=isMixed?proof.mixedTopic:proof.topic;
+card.innerHTML=`<div class="proof-card-header"><div><div class="proof-topic ${isMixed?'mystery':''}">${topic}</div><div class="proof-title">${title}</div></div>${isMixed?'<span class="mystery-badge">?</span>':''}</div><div class="proof-meta"><div class="xp-reward"><i class="bi bi-lightning-charge-fill"></i> +${isMixed?proof.xp+25:proof.xp}</div><div class="completion-status ${isCompleted?'completed':''}"><i class="bi bi-${isCompleted?'check-circle-fill':'circle'}"></i></div></div>`;
+grid.appendChild(card);});}
+function renderAchievements(){if(gameState.proofsCompleted>=1)achievements[0].unlocked=true;if(gameState.bestStreak>=5)achievements[1].unlocked=true;if(gameState.totalXP>=100)achievements[6].unlocked=true;if(gameState.level>=5)achievements[7].unlocked=true;const grid=document.getElementById('achievements-grid');grid.innerHTML='';achievements.forEach(a=>{const d=document.createElement('div');d.className=`achievement ${a.unlocked?'unlocked':'locked'}`;d.innerHTML=a.icon;d.title=a.name;grid.appendChild(d);});}
+function setTool(tool){gameState.currentTool=tool;document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));const tb=document.getElementById(`tool-${tool}`);if(tb)tb.classList.add('active');}
+function clearUserAnnotations(){gameState.userAnnotations=[];renderDiagram();}
+function startProof(proofId,isMixed=false){const proof=proofChallenges.find(p=>p.id===proofId);if(!proof)return;gameState.currentProof=proof;gameState.isMixedMode=isMixed;gameState.hintsRemaining=3;gameState.timeRemaining=300;gameState.startTime=Date.now();gameState.userAnnotations=[];gameState.currentTool='select';gameState.isSubmitted=false;
+document.getElementById('dashboard').classList.add('hidden');document.getElementById('game-view').classList.add('active');
+document.getElementById('game-title').textContent=isMixed?proof.mixedTitle:proof.title;document.getElementById('game-subtitle').textContent=isMixed?proof.mixedDescription:proof.description;document.getElementById('hints-left').textContent=gameState.hintsRemaining;document.getElementById('submit-btn').disabled=false;document.getElementById('submit-btn').innerHTML='<i class="bi bi-send-fill"></i> Submit';
+setTool('select');setDifficulty(gameState.currentDifficulty);renderDiagram();renderGivenInfo();renderProofTable();startTimer();}
+function exitGame(){clearInterval(gameState.timerInterval);document.getElementById('dashboard').classList.remove('hidden');document.getElementById('game-view').classList.remove('active');gameState.currentProof=null;gameState.isSubmitted=false;}
+function setDifficulty(diff){gameState.currentDifficulty=diff;document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));document.querySelector(`.diff-btn.${diff}`).classList.add('active');if(gameState.currentProof&&!gameState.isSubmitted)renderProofTable();}
+function startTimer(){clearInterval(gameState.timerInterval);updateTimerDisplay();gameState.timerInterval=setInterval(()=>{gameState.timeRemaining--;updateTimerDisplay();if(gameState.timeRemaining<=0)clearInterval(gameState.timerInterval);},1000);}
+function updateTimerDisplay(){const m=Math.floor(gameState.timeRemaining/60),s=gameState.timeRemaining%60;document.getElementById('time-value').textContent=`${m}:${s.toString().padStart(2,'0')}`;document.getElementById('timer').classList.toggle('warning',gameState.timeRemaining<=60);}
+function getPoint(id){return gameState.currentProof.diagram.points.find(p=>p.id===id);}
+function getLine(id){return gameState.currentProof.diagram.lines.find(l=>l.id===id);}
+function getMidpoint(p1,p2){return{x:(p1.x+p2.x)/2,y:(p1.y+p2.y)/2};}
+function renderDiagram(){const svg=document.getElementById('diagram-svg');const proof=gameState.currentProof;if(!proof)return;svg.innerHTML='';
+if(proof.diagram.shapes)proof.diagram.shapes.forEach(shape=>{const polygon=document.createElementNS('http://www.w3.org/2000/svg','polygon');polygon.setAttribute('points',shape.points.map(pid=>{const p=getPoint(pid);return`${p.x},${p.y}`;}).join(' '));polygon.setAttribute('fill',shape.fill);svg.appendChild(polygon);});
+proof.diagram.lines.forEach(line=>{const from=getPoint(line.from),to=getPoint(line.to);const lineEl=document.createElementNS('http://www.w3.org/2000/svg','line');lineEl.setAttribute('x1',from.x);lineEl.setAttribute('y1',from.y);lineEl.setAttribute('x2',to.x);lineEl.setAttribute('y2',to.y);lineEl.setAttribute('class',`diagram-line ${line.style==='dashed'?'dashed':''}`);lineEl.setAttribute('data-line-id',line.id);lineEl.onclick=(e)=>handleLineClick(e,line);svg.appendChild(lineEl);});
+renderGivenMarks(svg,proof.diagram.givenMarks);renderUserAnnotations(svg);
+proof.diagram.points.forEach(point=>{if(!point.label)return;const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class','diagram-point');g.onclick=(e)=>handlePointClick(e,point);const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');circle.setAttribute('cx',point.x);circle.setAttribute('cy',point.y);circle.setAttribute('r','5');g.appendChild(circle);const text=document.createElementNS('http://www.w3.org/2000/svg','text');text.setAttribute('x',point.x+10);text.setAttribute('y',point.y-10);text.setAttribute('class','point-label');text.textContent=point.label;g.appendChild(text);svg.appendChild(g);});}
+
+function renderGivenMarks(svg,marks){if(!marks)return;
+if(marks.ticks)marks.ticks.forEach(tick=>{const line=getLine(tick.line);if(!line)return;const from=getPoint(line.from),to=getPoint(line.to),mid=getMidpoint(from,to);const dx=to.x-from.x,dy=to.y-from.y,len=Math.sqrt(dx*dx+dy*dy),perpX=-dy/len*10,perpY=dx/len*10;for(let i=0;i<tick.count;i++){const offset=(i-(tick.count-1)/2)*5,tickMid={x:mid.x+(dx/len)*offset,y:mid.y+(dy/len)*offset};const tickLine=document.createElementNS('http://www.w3.org/2000/svg','line');tickLine.setAttribute('x1',tickMid.x-perpX);tickLine.setAttribute('y1',tickMid.y-perpY);tickLine.setAttribute('x2',tickMid.x+perpX);tickLine.setAttribute('y2',tickMid.y+perpY);tickLine.setAttribute('class','tick-mark');svg.appendChild(tickLine);}});
+if(marks.angles)marks.angles.forEach(angle=>{const vertex=getPoint(angle.vertex),ray1End=getPoint(angle.rays[0]),ray2End=getPoint(angle.rays[1]);if(!vertex||!ray1End||!ray2End)return;const a1=Math.atan2(ray1End.y-vertex.y,ray1End.x-vertex.x),a2=Math.atan2(ray2End.y-vertex.y,ray2End.x-vertex.x);let start=a1,end=a2;while(end<start)end+=2*Math.PI;if(end-start>Math.PI)[start,end]=[end,start+2*Math.PI];const r=20+(angle.type-1)*8,x1=vertex.x+r*Math.cos(start),y1=vertex.y+r*Math.sin(start),x2=vertex.x+r*Math.cos(end),y2=vertex.y+r*Math.sin(end);const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',`M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}`);path.setAttribute('class',`angle-arc congruent-${angle.type}`);svg.appendChild(path);});
+if(marks.rightAngles)marks.rightAngles.forEach(ra=>{const vertex=getPoint(ra.vertex),r1=getPoint(ra.rays[0]),r2=getPoint(ra.rays[1]);if(!vertex||!r1||!r2)return;const size=15,dx1=r1.x-vertex.x,dy1=r1.y-vertex.y,len1=Math.sqrt(dx1*dx1+dy1*dy1),ux1=dx1/len1,uy1=dy1/len1,dx2=r2.x-vertex.x,dy2=r2.y-vertex.y,len2=Math.sqrt(dx2*dx2+dy2*dy2),ux2=dx2/len2,uy2=dy2/len2;const p1={x:vertex.x+ux1*size,y:vertex.y+uy1*size},p2={x:vertex.x+ux1*size+ux2*size,y:vertex.y+uy1*size+uy2*size},p3={x:vertex.x+ux2*size,y:vertex.y+uy2*size};const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',`M ${p1.x} ${p1.y} L ${p2.x} ${p2.y} L ${p3.x} ${p3.y}`);path.setAttribute('class','angle-arc right-angle');svg.appendChild(path);});
+if(marks.parallel)marks.parallel.forEach(parallel=>{[getLine(parallel.line1),getLine(parallel.line2)].forEach(line=>{if(!line)return;const from=getPoint(line.from),to=getPoint(line.to),mid=getMidpoint(from,to),dx=to.x-from.x,dy=to.y-from.y,len=Math.sqrt(dx*dx+dy*dy),ux=dx/len,uy=dy/len,arrowSize=6;const arrow=document.createElementNS('http://www.w3.org/2000/svg','path');const p1={x:mid.x-ux*arrowSize-uy*arrowSize/2,y:mid.y-uy*arrowSize+ux*arrowSize/2},p2=mid,p3={x:mid.x-ux*arrowSize+uy*arrowSize/2,y:mid.y-uy*arrowSize-ux*arrowSize/2};arrow.setAttribute('d',`M ${p1.x} ${p1.y} L ${p2.x} ${p2.y} L ${p3.x} ${p3.y}`);arrow.setAttribute('class','parallel-mark');svg.appendChild(arrow);});});}
+
+function renderUserAnnotations(svg){gameState.userAnnotations.forEach((ann,idx)=>{if(ann.type==='tick'){const line=getLine(ann.lineId);if(!line)return;const from=getPoint(line.from),to=getPoint(line.to),mid=getMidpoint(from,to),dx=to.x-from.x,dy=to.y-from.y,len=Math.sqrt(dx*dx+dy*dy),perpX=-dy/len*10,perpY=dx/len*10;for(let i=0;i<ann.count;i++){const offset=(i-(ann.count-1)/2)*5,tickMid={x:mid.x+(dx/len)*offset,y:mid.y+(dy/len)*offset};const tickLine=document.createElementNS('http://www.w3.org/2000/svg','line');tickLine.setAttribute('x1',tickMid.x-perpX);tickLine.setAttribute('y1',tickMid.y-perpY);tickLine.setAttribute('x2',tickMid.x+perpX);tickLine.setAttribute('y2',tickMid.y+perpY);tickLine.setAttribute('class','tick-mark user-annotation');tickLine.onclick=()=>{if(gameState.currentTool==='select'){gameState.userAnnotations.splice(idx,1);renderDiagram();}};svg.appendChild(tickLine);}}else if(ann.type==='angle'){const vertex=getPoint(ann.vertexId);if(!vertex)return;const adjLines=gameState.currentProof.diagram.lines.filter(l=>l.from===ann.vertexId||l.to===ann.vertexId);if(adjLines.length<2)return;const r1=getPoint(adjLines[0].from===ann.vertexId?adjLines[0].to:adjLines[0].from),r2=getPoint(adjLines[1].from===ann.vertexId?adjLines[1].to:adjLines[1].from);const a1=Math.atan2(r1.y-vertex.y,r1.x-vertex.x),a2=Math.atan2(r2.y-vertex.y,r2.x-vertex.x);let start=a1,end=a2;while(end<start)end+=2*Math.PI;if(end-start>Math.PI)[start,end]=[end,start+2*Math.PI];const r=20+(ann.arcType-1)*8,x1=vertex.x+r*Math.cos(start),y1=vertex.y+r*Math.sin(start),x2=vertex.x+r*Math.cos(end),y2=vertex.y+r*Math.sin(end);const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',`M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}`);path.setAttribute('class',`angle-arc congruent-${ann.arcType} user-annotation`);path.onclick=()=>{if(gameState.currentTool==='select'){gameState.userAnnotations.splice(idx,1);renderDiagram();}};svg.appendChild(path);}else if(ann.type==='rightAngle'){const vertex=getPoint(ann.vertexId);if(!vertex)return;const adjLines=gameState.currentProof.diagram.lines.filter(l=>l.from===ann.vertexId||l.to===ann.vertexId);if(adjLines.length<2)return;const r1=getPoint(adjLines[0].from===ann.vertexId?adjLines[0].to:adjLines[0].from),r2=getPoint(adjLines[1].from===ann.vertexId?adjLines[1].to:adjLines[1].from);const size=15,dx1=r1.x-vertex.x,dy1=r1.y-vertex.y,len1=Math.sqrt(dx1*dx1+dy1*dy1),ux1=dx1/len1,uy1=dy1/len1,dx2=r2.x-vertex.x,dy2=r2.y-vertex.y,len2=Math.sqrt(dx2*dx2+dy2*dy2),ux2=dx2/len2,uy2=dy2/len2;const p1={x:vertex.x+ux1*size,y:vertex.y+uy1*size},p2={x:vertex.x+ux1*size+ux2*size,y:vertex.y+uy1*size+uy2*size},p3={x:vertex.x+ux2*size,y:vertex.y+uy2*size};const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',`M ${p1.x} ${p1.y} L ${p2.x} ${p2.y} L ${p3.x} ${p3.y}`);path.setAttribute('class','angle-arc right-angle user-annotation');path.onclick=()=>{if(gameState.currentTool==='select'){gameState.userAnnotations.splice(idx,1);renderDiagram();}};svg.appendChild(path);}else if(ann.type==='label'){const text=document.createElementNS('http://www.w3.org/2000/svg','text');text.setAttribute('x',ann.x);text.setAttribute('y',ann.y);text.setAttribute('class','annotation-label user-annotation');text.textContent=ann.text;text.style.cursor='pointer';text.onclick=()=>{if(gameState.currentTool==='select'){gameState.userAnnotations.splice(idx,1);renderDiagram();}};svg.appendChild(text);}});}
+
+function handlePointClick(e,point){e.stopPropagation();if(gameState.isSubmitted)return;const tool=gameState.currentTool;if(tool==='angle1'||tool==='angle2'){gameState.userAnnotations.push({type:'angle',vertexId:point.id,arcType:tool==='angle1'?1:2});renderDiagram();}else if(tool==='right'){gameState.userAnnotations.push({type:'rightAngle',vertexId:point.id});renderDiagram();}else if(tool==='label'){openLabelModal((t)=>{if(t){gameState.userAnnotations.push({type:'label',x:point.x+12,y:point.y-12,text:t});renderDiagram();}});}}
+
+function handleLineClick(e,line){e.stopPropagation();if(gameState.isSubmitted)return;const tool=gameState.currentTool;if(tool==='tick1'||tool==='tick2'){gameState.userAnnotations.push({type:'tick',lineId:line.id,count:tool==='tick1'?1:2});renderDiagram();}else if(tool==='label'){const from=getPoint(line.from),to=getPoint(line.to),mid=getMidpoint(from,to);openLabelModal((t)=>{if(t){gameState.userAnnotations.push({type:'label',x:mid.x,y:mid.y-12,text:t});renderDiagram();}});}}
+
+function openLabelModal(callback){document.getElementById('label-input').value='';gameState.modalCallback=callback;document.getElementById('label-modal').classList.add('active');document.getElementById('label-input').focus();}
+function closeLabelModal(){document.getElementById('label-modal').classList.remove('active');gameState.modalCallback=null;}
+function submitLabel(){const text=document.getElementById('label-input').value.trim();if(gameState.modalCallback&&text)gameState.modalCallback(text);closeLabelModal();}
+document.getElementById('label-input')?.addEventListener('keypress',(e)=>{if(e.key==='Enter')submitLabel();});
+document.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeLabelModal();});
+
+function renderGivenInfo(){const proof=gameState.currentProof;document.getElementById('given-list').innerHTML=proof.given.map(g=>`• ${g}`).join('<br>');document.getElementById('prove-statement').textContent=proof.prove;}
+
+function renderProofTable(){const proof=gameState.currentProof,diff=gameState.currentDifficulty,tbody=document.getElementById('proof-body');tbody.innerHTML='';
+const isHard=diff==='hard';
+proof.proof.forEach((step,i)=>{const tr=document.createElement('tr');tr.className='proof-row';const isPre=step.prefilled[diff];
+if(isHard&&!isPre){
+const stmtOpts=proof.bankItems.statements.map(s=>`<option value="${s}">${s}</option>`).join('');
+const reasonOpts=proof.bankItems.reasons.map(r=>`<option value="${r}">${r}</option>`).join('');
+tr.innerHTML=`<td>${i+1}</td><td><select class="proof-select" data-type="statement" data-row="${i}"><option value="">Select statement...</option>${stmtOpts}</select></td><td><select class="proof-select" data-type="reason" data-row="${i}"><option value="">Select reason...</option>${reasonOpts}</select></td>`;
+}else{
+tr.innerHTML=`<td>${i+1}</td><td>${isPre?`<div class="proof-cell filled given">${step.statement}</div>`:`<div class="dropzone" data-type="statement" data-row="${i}" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">statement</div>`}</td><td>${isPre?`<div class="proof-cell filled given">${step.reason}</div>`:`<div class="dropzone" data-type="reason" data-row="${i}" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">reason</div>`}</td>`;}
+tbody.appendChild(tr);});renderAnswerBank();}
+
+function renderAnswerBank(){const proof=gameState.currentProof,diff=gameState.currentDifficulty,bank=document.getElementById('answer-bank'),bankItems=document.getElementById('bank-items');
+if(diff==='hard'){bank.style.display='none';return;}
+bank.style.display='block';bankItems.innerHTML='';const usedS=new Set(),usedR=new Set();proof.proof.forEach(s=>{if(s.prefilled[diff]){usedS.add(s.statement);usedR.add(s.reason);}});const items=[...proof.bankItems.statements.filter(s=>!usedS.has(s)).map(s=>({text:s,type:'statement'})),...proof.bankItems.reasons.filter(r=>!usedR.has(r)).map(r=>({text:r,type:'reason'}))];for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}
+items.forEach(item=>{const div=document.createElement('div');div.className='bank-item';div.draggable=true;div.dataset.text=item.text;div.dataset.type=item.type;div.textContent=item.text;div.ondragstart=handleDragStart;div.ondragend=handleDragEnd;bankItems.appendChild(div);});}
+
+let draggedItem=null;
+function handleDragStart(e){if(gameState.isSubmitted)return;draggedItem=e.target;e.target.classList.add('dragging');e.dataTransfer.setData('text/plain',e.target.dataset.text);e.dataTransfer.setData('type',e.target.dataset.type);}
+function handleDragEnd(e){e.target.classList.remove('dragging');draggedItem=null;}
+function handleDragOver(e){if(gameState.isSubmitted)return;e.preventDefault();const dz=e.target.closest('.dropzone');if(dz&&!dz.classList.contains('filled'))dz.classList.add('drag-over');}
+function handleDragLeave(e){const dz=e.target.closest('.dropzone');if(dz)dz.classList.remove('drag-over');}
+function handleDrop(e){if(gameState.isSubmitted)return;e.preventDefault();const dz=e.target.closest('.dropzone');if(!dz||dz.classList.contains('filled'))return;dz.classList.remove('drag-over');const text=e.dataTransfer.getData('text/plain'),type=e.dataTransfer.getData('type');if(type!==dz.dataset.type){dz.classList.add('shake');setTimeout(()=>dz.classList.remove('shake'),500);return;}dz.classList.add('filled');dz.innerHTML=`${text}<button class="remove-btn" onclick="removeAnswer(this)"><i class="bi bi-x-circle"></i></button>`;dz.dataset.answer=text;if(draggedItem)draggedItem.classList.add('used');}
+function removeAnswer(btn){if(gameState.isSubmitted)return;const dz=btn.parentElement,answer=dz.dataset.answer;dz.classList.remove('filled','correct','incorrect');dz.innerHTML=dz.dataset.type;delete dz.dataset.answer;document.querySelectorAll('.bank-item').forEach(item=>{if(item.dataset.text===answer)item.classList.remove('used');});}
+
+function submitProof(){if(gameState.isSubmitted)return;gameState.isSubmitted=true;clearInterval(gameState.timerInterval);
+const proof=gameState.currentProof,diff=gameState.currentDifficulty,isHard=diff==='hard';let correctCount=0,totalCount=0;
+proof.proof.forEach((step,i)=>{if(step.prefilled[diff])return;
+if(isHard){
+const sSel=document.querySelector(`select[data-type="statement"][data-row="${i}"]`),rSel=document.querySelector(`select[data-type="reason"][data-row="${i}"]`);
+if(sSel){totalCount++;if(sSel.value===step.statement){sSel.classList.add('correct');correctCount++;}else{sSel.classList.add('incorrect');const correct=document.createElement('div');correct.className='proof-cell correct';correct.innerHTML=`✓ ${step.statement}`;sSel.parentNode.appendChild(correct);}}
+if(rSel){totalCount++;if(rSel.value===step.reason){rSel.classList.add('correct');correctCount++;}else{rSel.classList.add('incorrect');const correct=document.createElement('div');correct.className='proof-cell correct';correct.innerHTML=`✓ ${step.reason}`;rSel.parentNode.appendChild(correct);}}
+}else{
+const sZone=document.querySelector(`.dropzone[data-type="statement"][data-row="${i}"]`),rZone=document.querySelector(`.dropzone[data-type="reason"][data-row="${i}"]`);
+if(sZone){totalCount++;if(sZone.dataset.answer===step.statement){sZone.classList.add('correct');correctCount++;}else{sZone.classList.add('incorrect');const correct=document.createElement('div');correct.className='proof-cell correct';correct.innerHTML=`✓ ${step.statement}`;sZone.parentNode.appendChild(correct);}}
+if(rZone){totalCount++;if(rZone.dataset.answer===step.reason){rZone.classList.add('correct');correctCount++;}else{rZone.classList.add('incorrect');const correct=document.createElement('div');correct.className='proof-cell correct';correct.innerHTML=`✓ ${step.reason}`;rZone.parentNode.appendChild(correct);}}
+}});
+document.querySelectorAll('.proof-select').forEach(s=>s.disabled=true);
+document.getElementById('submit-btn').disabled=true;document.getElementById('submit-btn').innerHTML='<i class="bi bi-check-circle"></i> Done';
+const timeTaken=Math.floor((Date.now()-gameState.startTime)/1000);const allCorrect=correctCount===totalCount;
+gameState.totalAttempts+=totalCount;gameState.correctAttempts+=correctCount;
+if(allCorrect){let xp=proof.xp;if(gameState.hintsRemaining===3)xp+=25;if(timeTaken<60)xp+=25;if(gameState.currentDifficulty==='hard')xp+=25;if(gameState.isMixedMode)xp+=25;
+gameState.totalXP+=xp;gameState.streak++;if(gameState.streak>gameState.bestStreak)gameState.bestStreak=gameState.streak;if(!gameState.completedProofs.includes(proof.id)){gameState.proofsCompleted++;gameState.completedProofs.push(proof.id);}gameState.totalTime+=timeTaken;
+if(gameState.hintsRemaining===3&&totalCount>0)achievements[3].unlocked=true;if(gameState.isMixedMode)achievements[4].unlocked=true;if(gameState.currentDifficulty==='hard')achievements[5].unlocked=true;if(timeTaken<60)achievements[2].unlocked=true;
+document.getElementById('result-icon').innerHTML='<i class="bi bi-patch-check-fill"></i>';document.getElementById('result-icon').className='success-icon';document.getElementById('result-title').textContent='COMPLETE!';document.getElementById('result-xp').style.display='block';document.getElementById('earned-xp').textContent=xp;
+}else{gameState.streak=0;document.getElementById('result-icon').innerHTML='<i class="bi bi-x-circle-fill"></i>';document.getElementById('result-icon').className='success-icon fail';document.getElementById('result-title').textContent='Try Again';document.getElementById('result-xp').style.display='none';}
+document.getElementById('completion-time').textContent=`${Math.floor(timeTaken/60)}:${(timeTaken%60).toString().padStart(2,'0')}`;document.getElementById('correct-count').textContent=`${correctCount}/${totalCount}`;
+setTimeout(()=>{document.getElementById('success-modal').classList.add('active');if(allCorrect)createConfetti();},500);saveGameState();updateUI();}
+
+function continueGame(){document.getElementById('success-modal').classList.remove('active');exitGame();renderProofCards();}
+function useHint(){if(gameState.hintsRemaining<=0||gameState.isSubmitted)return;const proof=gameState.currentProof,diff=gameState.currentDifficulty,isHard=diff==='hard';
+for(let i=0;i<proof.proof.length;i++){const step=proof.proof[i];if(step.prefilled[diff])continue;
+if(isHard){
+const sSel=document.querySelector(`select[data-type="statement"][data-row="${i}"]`),rSel=document.querySelector(`select[data-type="reason"][data-row="${i}"]`);
+if(sSel&&!sSel.value){sSel.value=step.statement;gameState.hintsRemaining--;document.getElementById('hints-left').textContent=gameState.hintsRemaining;return;}
+if(rSel&&!rSel.value){rSel.value=step.reason;gameState.hintsRemaining--;document.getElementById('hints-left').textContent=gameState.hintsRemaining;return;}
+}else{
+const sZone=document.querySelector(`.dropzone[data-type="statement"][data-row="${i}"]`),rZone=document.querySelector(`.dropzone[data-type="reason"][data-row="${i}"]`);
+if(sZone&&!sZone.classList.contains('filled')){fillDropzone(sZone,step.statement);gameState.hintsRemaining--;document.getElementById('hints-left').textContent=gameState.hintsRemaining;return;}
+if(rZone&&!rZone.classList.contains('filled')){fillDropzone(rZone,step.reason);gameState.hintsRemaining--;document.getElementById('hints-left').textContent=gameState.hintsRemaining;return;}
+}}}
+function fillDropzone(dz,text){dz.classList.add('filled');dz.innerHTML=`${text}<button class="remove-btn" onclick="removeAnswer(this)"><i class="bi bi-x-circle"></i></button>`;dz.dataset.answer=text;document.querySelectorAll('.bank-item').forEach(item=>{if(item.dataset.text===text)item.classList.add('used');});}
+function resetProof(){if(gameState.isSubmitted)return;gameState.hintsRemaining=3;document.getElementById('hints-left').textContent=3;renderProofTable();}
+function createConfetti(){const colors=['#00f5ff','#ff00ff','#39ff14','#ff6b35','#bf00ff'];for(let i=0;i<50;i++){const c=document.createElement('div');c.className='confetti';c.style.left=Math.random()*100+'vw';c.style.backgroundColor=colors[Math.floor(Math.random()*colors.length)];c.style.transform=`rotate(${Math.random()*360}deg)`;document.body.appendChild(c);const anim=c.animate([{top:'-10px',opacity:1},{top:'100vh',opacity:0}],{duration:Math.random()*2000+1000,easing:'cubic-bezier(0.25,0.46,0.45,0.94)'});anim.onfinish=()=>c.remove();}}
+
+document.addEventListener('DOMContentLoaded',()=>{loadGameState();renderCategoryTabs();renderProofCards();renderAchievements();});
+    </script>
+</body>
+</html>
